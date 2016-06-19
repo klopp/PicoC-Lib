@@ -17,14 +17,16 @@
 # define PICOC_DEV_NULL "NUL"
 #endif
 
-typedef struct _PicoCLib
-{
+typedef struct _PicoCLib {
     Picoc pc;
     char PicocOutBuf[PICOC_OUTBUF_SIZE];
 } PicoCLib;
 
-PicoCLib * PicoCLibInit( PicoCLib * pc );
-void PicoCLibDown(PicoCLib * pc);
+PicoCLib *PicoCLibInit( PicoCLib *pc );
+void PicoCLibDown( PicoCLib *pc );
+int PicoCLibMain( PicoCLib *pc, const char *file );
+
+
 
 #endif
 
