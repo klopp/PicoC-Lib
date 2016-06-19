@@ -3,7 +3,7 @@
  *      Author: Vsevolod Lutovinov <klopp@yandex.ru>
  */
 
-#include "../picoc/picoc.h"
+#include "picoc-lib.h"
 
 int main() {
     return 0;
