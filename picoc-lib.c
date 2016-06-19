@@ -55,7 +55,8 @@ static void PicoCLibCallMain( PicoCLib *pc ) {
     VariableDefinePlatformVar( &pc->pc, NULL, "__exit_value", &pc->pc.IntType,
                                ( union AnyValue * ) &pc->pc.PicocExitValue, TRUE );
     PicocParse( &pc->pc, "[main]", CALL_MAIN_NO_ARGS_RETURN_INT,
-                strlen( CALL_MAIN_NO_ARGS_RETURN_INT ), TRUE, TRUE, FALSE, pc->InitDebug );
+                strlen( CALL_MAIN_NO_ARGS_RETURN_INT ), TRUE, TRUE, FALSE,
+                pc->InitDebug );
 }
 
 int PicoCLibMainFromSources( PicoCLib *pc, const char *source, ... ) {
@@ -94,8 +95,8 @@ int PicoCLibMainFromFiles( PicoCLib *pc, const char *file, ... ) {
             SourceStr[0] = '/';
             SourceStr[1] = '/';
         }
-        PicocParse( &pc->pc, current, SourceStr, strlen( SourceStr ), TRUE, FALSE, TRUE,
-                    pc->InitDebug );
+        PicocParse( &pc->pc, current, SourceStr, strlen( SourceStr ), TRUE, FALSE,
+                    TRUE, pc->InitDebug );
         current = va_arg( ap, char * );
     }
     PicoCLibCallMain( pc );
@@ -157,3 +158,14 @@ int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val ) {
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
+#if defined(NO_DEBUGGER)
+void DebugCheckStatement( struct ParseState *Parser ) {
+    ( void ) Parser;
+}
+void DebugInit( Picoc *pc ) {
+    ( void ) pc;
+}
+void DebugCleanup( Picoc *pc ) {
+    ( void ) pc;
+}
+#endif
