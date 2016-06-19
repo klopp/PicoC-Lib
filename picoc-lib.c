@@ -138,10 +138,14 @@ int PicoCLibBindLong( PicoCLib *pc, const char *name, long *val ) {
 int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val ) {
     return PicoCLibBind( pc, name, val, &pc->pc.UnsignedLongType );
 }
+
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
 int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val ) {
     if( pc->nArrayPointers >= PICOC_ARRAY_POINTERS_MAX ) {
         fprintf( pc->pc.CStdOut,
-                 "PicoCLibBindPointer(): %u pointers already added",
+                 "PicoCLibBindArray(): %u array pointers already exists",
                  PICOC_ARRAY_POINTERS_MAX );
         return 1;
     }
