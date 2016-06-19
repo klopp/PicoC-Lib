@@ -26,7 +26,9 @@ PicoCLib *PicoCLibInit( PicoCLib *pc );
 void PicoCLibDown( PicoCLib *pc );
 int PicoCLibMain( PicoCLib *pc, const char *file );
 
-
+void PicoCLibUnbind( PicoCLib *pc, const char *name );
+int PicoCLibBindInt( PicoCLib *pc, const char *name, int *val );
+int PicoCLibBindUInt( PicoCLib *pc, const char *name, unsigned int *val );
 
 #endif
 

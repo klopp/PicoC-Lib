@@ -35,7 +35,8 @@ static void PicoCLibCallMain( PicoCLib *pc ) {
     }
     VariableGet( &pc->pc, NULL, TableStrRegister( &pc->pc, "main" ), &FuncValue );
     if( FuncValue->Typ->Base != TypeFunction ) {
-        ProgramFailNoParser( &pc->pc, "\"main\" is not a function - can't call it" );
+        ProgramFailNoParser( &pc->pc,
+                             "\"main\" is not a function - can't call it" );
     }
     if( FuncValue->Val->FuncDef.NumParams != 0 ) {
         ProgramFailNoParser( &pc->pc, "\"main()\" can not have arguments" );
@@ -66,10 +67,13 @@ static int PicoCLibBind( PicoCLib *pc, const char *name, void *val,
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         return 1;
     }
-    VariableDefinePlatformVar( &pc->pc, NULL, ( char * )name, type,
-                               ( union AnyValue * ) val,
-                               1 );
+    VariableDefinePlatformVar( &pc->pc, NULL, ( char * ) name, type,
+                               ( union AnyValue * ) val, 1 );
     return 0;
+}
+
+void PicoCLibUnbind( PicoCLib *pc, const char *name ) {
+    TableDelete( &pc->pc, &pc->pc.GlobalTable, TableStrRegister( &pc->pc, name ) );
 }
 
 int PicoCLibBindInt( PicoCLib *pc, const char *name, int *val ) {
