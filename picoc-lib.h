@@ -8,9 +8,9 @@
 
 #include "../picoc/picoc.h"
 
-#define     PICOC_STACK_SIZE    1024*1024*16
-#define     PICOC_OUTBUF_SIZE   1024*4
-#define     PICOC_POINTERS_MAX  64
+#define     PICOC_STACK_SIZE            1024*1024*16
+#define     PICOC_OUTBUF_SIZE           1024*4
+#define     PICOC_ARRAY_POINTERS_MAX    64
 
 #ifdef UNIX_HOST
 # define PICOC_DEV_NULL "/dev/null"
@@ -21,8 +21,8 @@
 typedef struct _PicoCLib {
     Picoc pc;
     int InitDebug;
-    void *Pointers[PICOC_POINTERS_MAX];
-    size_t nPointers;
+    void *ArrayPointers[PICOC_ARRAY_POINTERS_MAX];
+    size_t nArrayPointers;
     char PicocOutBuf[PICOC_OUTBUF_SIZE];
 } PicoCLib;
 

@@ -16,8 +16,8 @@ PicoCLib *PicoCLibReset( PicoCLib *pc ) {
 PicoCLib *PicoCLibInit( PicoCLib *pc ) {
     PicocInitialise( &pc->pc, PICOC_STACK_SIZE );
     memset( pc->PicocOutBuf, 0, PICOC_OUTBUF_SIZE );
-    memset( pc->Pointers, 0, PICOC_POINTERS_MAX * sizeof( void * ) );
-    pc->nPointers = 0;
+    memset( pc->ArrayPointers, 0, PICOC_ARRAY_POINTERS_MAX * sizeof( void * ) );
+    pc->nArrayPointers = 0;
     pc->pc.CStdOut = fopen( PICOC_DEV_NULL, "a" );
     setvbuf( pc->pc.CStdOut, pc->PicocOutBuf, _IOFBF, PICOC_OUTBUF_SIZE );
     return pc;
@@ -140,15 +140,15 @@ int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val ) {
     return PicoCLibBind( pc, name, val, &pc->pc.UnsignedLongType );
 }
 int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val ) {
-    if( pc->nPointers >= PICOC_POINTERS_MAX ) {
+    if( pc->nArrayPointers >= PICOC_ARRAY_POINTERS_MAX ) {
         fprintf( pc->pc.CStdOut,
                  "PicoCLibBindPointer(): %u pointers already added",
-                 PICOC_POINTERS_MAX );
+                 PICOC_ARRAY_POINTERS_MAX );
         return 1;
     }
-    pc->Pointers[pc->nPointers] = val;
-    pc->nPointers++;
-    return PicoCLibBind( pc, name, &pc->Pointers[pc->nPointers - 1],
+    pc->ArrayPointers[pc->nArrayPointers] = val;
+    pc->nArrayPointers++;
+    return PicoCLibBind( pc, name, &pc->ArrayPointers[pc->nArrayPointers - 1],
                          pc->pc.VoidPtrType );
 }
 int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val ) {
