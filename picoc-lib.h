@@ -8,7 +8,7 @@
 
 #include "../picoc/picoc.h"
 
-#define     PICOC_STACK_SIZE    1024*1024
+#define     PICOC_STACK_SIZE    1024*1024*16
 #define     PICOC_OUTBUF_SIZE   1024*4
 #define     PICOC_POINTERS_MAX  64
 
