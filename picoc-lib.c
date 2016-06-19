@@ -54,8 +54,8 @@ static void PicoCLibCallMain( PicoCLib *pc ) {
     }
     VariableDefinePlatformVar( &pc->pc, NULL, "__exit_value", &pc->pc.IntType,
                                ( union AnyValue * ) &pc->pc.PicocExitValue, TRUE );
-    PicocParse( &pc->pc, "startup", CALL_MAIN_NO_ARGS_RETURN_INT,
-                strlen( CALL_MAIN_NO_ARGS_RETURN_INT ), TRUE, TRUE, FALSE, FALSE );
+    PicocParse( &pc->pc, "[main]", CALL_MAIN_NO_ARGS_RETURN_INT,
+                strlen( CALL_MAIN_NO_ARGS_RETURN_INT ), TRUE, TRUE, FALSE, pc->InitDebug );
 }
 
 int PicoCLibMainFromSources( PicoCLib *pc, const char *source, ... ) {
