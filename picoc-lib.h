@@ -22,13 +22,19 @@ typedef struct _PicoCLib {
     char PicocOutBuf[PICOC_OUTBUF_SIZE];
 } PicoCLib;
 
-PicoCLib *PicoCLibInit( PicoCLib *pc );
 void PicoCLibDown( PicoCLib *pc );
 int PicoCLibMain( PicoCLib *pc, const char *file );
 
 void PicoCLibUnbind( PicoCLib *pc, const char *name );
+
+int PicoCLibBindShort( PicoCLib *pc, const char *name, short *val );
+int PicoCLibBindUShort( PicoCLib *pc, const char *name, unsigned short *val );
 int PicoCLibBindInt( PicoCLib *pc, const char *name, int *val );
 int PicoCLibBindUInt( PicoCLib *pc, const char *name, unsigned int *val );
+int PicoCLibBindLong( PicoCLib *pc, const char *name, long *val );
+int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val );
+int PicoCLibBindPtr( PicoCLib *pc, const char *name, void *val );
+int PicoCLibBindCharPtr( PicoCLib *pc, const char *name, char *val );
 
 #endif
 

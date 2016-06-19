@@ -7,22 +7,18 @@
 #include <stdio.h>
 
 PicoCLib *PicoCLibInit( PicoCLib *pc ) {
-    if( !pc ) {
-        pc = malloc( sizeof( PicoCLib ) );
-    }
-    if( pc ) {
-        memset( pc, 0, sizeof( PicoCLib ) );
-        PicocInitialise( &pc->pc, PICOC_STACK_SIZE );
-        pc->pc.CStdOut = fopen( PICOC_DEV_NULL, "a" );
-        setvbuf( pc->pc.CStdOut, pc->PicocOutBuf, _IOFBF, PICOC_OUTBUF_SIZE );
-    }
+    PicocInitialise( &pc->pc, PICOC_STACK_SIZE );
+    memset( pc->PicocOutBuf, 0, PICOC_OUTBUF_SIZE );
+    pc->pc.CStdOut = fopen( PICOC_DEV_NULL, "a" );
+    setvbuf( pc->pc.CStdOut, pc->PicocOutBuf, _IOFBF, PICOC_OUTBUF_SIZE );
     return pc;
 }
 
 void PicoCLibDown( PicoCLib *pc ) {
-    if( pc ) {
+    if( pc->pc.CStdOut ) {
         fclose( pc->pc.CStdOut );
         PicocCleanup( &pc->pc );
+        pc->pc.CStdOut = NULL;
     }
 }
 
@@ -51,14 +47,14 @@ static void PicoCLibCallMain( PicoCLib *pc ) {
 }
 
 int PicoCLibMain( PicoCLib *pc, const char *file ) {
-    fflush( pc->pc.CStdOut );
-    memset( pc->PicocOutBuf, 0, PICOC_OUTBUF_SIZE );
+    PicoCLibDown( pc );
+    PicoCLibInit( pc );
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
-        return pc->pc.PicocExitValue;
+        return 1;
     }
     PicocPlatformScanFile( &pc->pc, file );
     PicoCLibCallMain( pc );
-    return pc->pc.PicocExitValue;
+    return 0;
 }
 
 static int PicoCLibBind( PicoCLib *pc, const char *name, void *val,
@@ -76,13 +72,32 @@ void PicoCLibUnbind( PicoCLib *pc, const char *name ) {
     TableDelete( &pc->pc, &pc->pc.GlobalTable, TableStrRegister( &pc->pc, name ) );
 }
 
+int PicoCLibBindShort( PicoCLib *pc, const char *name, short *val ) {
+    return PicoCLibBind( pc, name, val, &pc->pc.ShortType );
+}
+int PicoCLibBindUShort( PicoCLib *pc, const char *name, unsigned short *val ) {
+    return PicoCLibBind( pc, name, val, &pc->pc.UnsignedShortType );
+}
 int PicoCLibBindInt( PicoCLib *pc, const char *name, int *val ) {
     return PicoCLibBind( pc, name, val, &pc->pc.IntType );
 }
-
 int PicoCLibBindUInt( PicoCLib *pc, const char *name, unsigned int *val ) {
     return PicoCLibBind( pc, name, val, &pc->pc.UnsignedIntType );
 }
+int PicoCLibBindLong( PicoCLib *pc, const char *name, long *val ) {
+    return PicoCLibBind( pc, name, val, &pc->pc.LongType );
+}
+int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val ) {
+    return PicoCLibBind( pc, name, val, &pc->pc.UnsignedLongType );
+}
+
+int PicoCLibBindPtr( PicoCLib *pc, const char *name, void *val ) {
+    return PicoCLibBind( pc, name, val, &pc->pc.VoidPtrType );
+}
+int PicoCLibBindCharPtr( PicoCLib *pc, const char *name, char *val ) {
+    return PicoCLibBind( pc, name, val, &pc->pc.CharPtrType );
+}
+
 
 /*
  *  That's All, Folks!
