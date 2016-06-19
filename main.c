@@ -10,9 +10,19 @@ int main() {
     int rc;
     int aaa = 9;
     char bbb[16] = { 'b', 'B', 0 };
+    struct {
+        int a;
+        int b;
+    } ab = { 33, 44 };
+    struct {
+        int a;
+        int b;
+    } ad = { 55, 66 };
     PicoCLibInit( &pc );
     PicoCLibBindInt( &pc, "aaa", &aaa );
     PicoCLibBindCharArray( &pc, "bbb", bbb );
+    PicoCLibBindPointer( &pc, "ccc", &ab );
+    PicoCLibBindPointer( &pc, "ddd", &ad );
     rc = PicoCLibMain( &pc, "./t/main.picoc" );
     printf( "rc = %d, exit value: %d, error:\n%s\n", rc, pc.pc.PicocExitValue,
             pc.PicocOutBuf );
