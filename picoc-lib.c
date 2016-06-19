@@ -6,6 +6,11 @@
 #include "picoc-lib.h"
 #include <stdio.h>
 
+PicoCLib *PicoCLibReset( PicoCLib *pc ) {
+    PicoCLibDown( pc );
+    return PicoCLibInit( pc );
+}
+
 PicoCLib *PicoCLibInit( PicoCLib *pc ) {
     PicocInitialise( &pc->pc, PICOC_STACK_SIZE );
     memset( pc->PicocOutBuf, 0, PICOC_OUTBUF_SIZE );
@@ -47,8 +52,6 @@ static void PicoCLibCallMain( PicoCLib *pc ) {
 }
 
 int PicoCLibMain( PicoCLib *pc, const char *file ) {
-    PicoCLibDown( pc );
-    PicoCLibInit( pc );
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         return 1;
     }
@@ -92,10 +95,10 @@ int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val ) {
 }
 
 int PicoCLibBindPtr( PicoCLib *pc, const char *name, void *val ) {
-    return PicoCLibBind( pc, name, val, &pc->pc.VoidPtrType );
+    return PicoCLibBind( pc, name, val, pc->pc.VoidPtrType );
 }
-int PicoCLibBindCharPtr( PicoCLib *pc, const char *name, char *val ) {
-    return PicoCLibBind( pc, name, val, &pc->pc.CharPtrType );
+int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val ) {
+    return PicoCLibBind( pc, name, val, pc->pc.CharArrayType );
 }
 
 
