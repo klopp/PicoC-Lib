@@ -2,10 +2,12 @@
  *  Created on: 19 июня 2016 г.
  *      Author: Vsevolod Lutovinov <klopp@yandex.ru>
  */
-
 #include "picoc-lib.h"
 #include <stdio.h>
 
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
 PicoCLib *PicoCLibReset( PicoCLib *pc ) {
     PicoCLibDown( pc );
     return PicoCLibInit( pc );
@@ -29,6 +31,9 @@ void PicoCLibDown( PicoCLib *pc ) {
     }
 }
 
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
 #define CALL_MAIN_NO_ARGS_RETURN_INT "__exit_value = main();"
 
 static void PicoCLibCallMain( PicoCLib *pc ) {
@@ -53,15 +58,26 @@ static void PicoCLibCallMain( PicoCLib *pc ) {
                 strlen( CALL_MAIN_NO_ARGS_RETURN_INT ), TRUE, TRUE, FALSE, FALSE );
 }
 
-int PicoCLibMain( PicoCLib *pc, const char *file ) {
+int PicoCLibMain( PicoCLib *pc, const char *file, ... ) {
+    va_list ap;
+    const char *current = file;
+    va_start( ap, file );
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
+        va_end( ap );
         return 1;
     }
-    PicocPlatformScanFile( &pc->pc, file );
+    while( current ) {
+        PicocPlatformScanFile( &pc->pc, current );
+        current = va_arg( ap, char * );
+    }
     PicoCLibCallMain( pc );
+    va_end( ap );
     return 0;
 }
 
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
 static int PicoCLibBind( PicoCLib *pc, const char *name, void *val,
                          struct ValueType *type ) {
     fflush( pc->pc.CStdOut );
@@ -73,6 +89,9 @@ static int PicoCLibBind( PicoCLib *pc, const char *name, void *val,
     return 0;
 }
 
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
 int PicoCLibBindShort( PicoCLib *pc, const char *name, short *val ) {
     return PicoCLibBind( pc, name, val, &pc->pc.ShortType );
 }
@@ -91,7 +110,6 @@ int PicoCLibBindLong( PicoCLib *pc, const char *name, long *val ) {
 int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val ) {
     return PicoCLibBind( pc, name, val, &pc->pc.UnsignedLongType );
 }
-
 int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val ) {
     if( pc->nPointers >= PICOC_POINTERS_MAX ) {
         fprintf( pc->pc.CStdOut,
@@ -108,7 +126,6 @@ int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val ) {
     return PicoCLibBind( pc, name, val, pc->pc.CharArrayType );
 }
 
-/*
- *  That's All, Folks!
- */
-
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/

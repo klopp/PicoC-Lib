@@ -28,7 +28,7 @@ typedef struct _PicoCLib {
 PicoCLib *PicoCLibInit( PicoCLib *pc );
 PicoCLib *PicoCLibReset( PicoCLib *pc );
 void PicoCLibDown( PicoCLib *pc );
-int PicoCLibMain( PicoCLib *pc, const char *file );
+int PicoCLibMain( PicoCLib *pc, const char *file, ... );
 
 int PicoCLibBindShort( PicoCLib *pc, const char *name, short *val );
 int PicoCLibBindUShort( PicoCLib *pc, const char *name, unsigned short *val );

@@ -23,15 +23,11 @@ int main() {
     PicoCLibBindCharArray( &pc, "bbb", bbb );
     PicoCLibBindArray( &pc, "ccc", &ab );
     PicoCLibBindArray( &pc, "ddd", &ad );
-    rc = PicoCLibMain( &pc, "./t/main.picoc" );
+    rc = PicoCLibMain( &pc, "./t/main.picoc", NULL );
     printf( "rc = %d, exit value: %d, error:\n%s\n", rc, pc.pc.PicocExitValue,
             pc.PicocOutBuf );
-    /*
-        PicoCLibReset( &pc );
-        rc = PicoCLibMain( &pc, "./t/main.picoc" );
-        printf( "rc = %d, exit value: %d, error:\n%s\n", rc, pc.pc.PicocExitValue,
-                pc.PicocOutBuf );
-    */
+    printf( "aaa: %d, bbb: %s, [%d:%d], [%d:%d]\n", aaa, bbb, ab.a, ab.b,
+            ad.a, ad.b );
     PicoCLibDown( &pc );
     return 0;
 }
