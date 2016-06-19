@@ -58,7 +58,28 @@ static void PicoCLibCallMain( PicoCLib *pc ) {
                 strlen( CALL_MAIN_NO_ARGS_RETURN_INT ), TRUE, TRUE, FALSE, FALSE );
 }
 
-int PicoCLibMain( PicoCLib *pc, const char *file, ... ) {
+int PicoCLibMainFromSources( PicoCLib *pc, const char *source, ... ) {
+    va_list ap;
+    char file[0x20];
+    unsigned int idx = 1;
+    const char *current = source;
+    va_start( ap, source );
+    if( PicocPlatformSetExitPoint( &pc->pc ) ) {
+        va_end( ap );
+        return 1;
+    }
+    while( current ) {
+        sprintf( file, "[source/%04u]", idx );
+        PicocParse( &pc->pc, file, current, strlen( current ), TRUE, FALSE, TRUE,
+                    pc->InitDebug );
+        current = va_arg( ap, char * );
+    }
+    PicoCLibCallMain( pc );
+    va_end( ap );
+    return 0;
+}
+
+int PicoCLibMainFromFiles( PicoCLib *pc, const char *file, ... ) {
     va_list ap;
     const char *current = file;
     va_start( ap, file );
@@ -67,7 +88,14 @@ int PicoCLibMain( PicoCLib *pc, const char *file, ... ) {
         return 1;
     }
     while( current ) {
-        PicocPlatformScanFile( &pc->pc, current );
+        char *SourceStr = PlatformReadFile( &pc->pc, current );
+        /* ignore "#!/path/to/picoc" .. by replacing the "#!" with "//" */
+        if( SourceStr && SourceStr[0] == '#' && SourceStr[1] == '!' ) {
+            SourceStr[0] = '/';
+            SourceStr[1] = '/';
+        }
+        PicocParse( &pc->pc, current, SourceStr, strlen( SourceStr ), TRUE, FALSE, TRUE,
+                    pc->InitDebug );
         current = va_arg( ap, char * );
     }
     PicoCLibCallMain( pc );

@@ -20,15 +20,22 @@
 
 typedef struct _PicoCLib {
     Picoc pc;
+    int InitDebug;
     void *Pointers[PICOC_POINTERS_MAX];
     size_t nPointers;
     char PicocOutBuf[PICOC_OUTBUF_SIZE];
 } PicoCLib;
 
+/*
+ * From picoc.c
+ */
+char *PlatformReadFile( Picoc *pc, const char *FileName );
+
 PicoCLib *PicoCLibInit( PicoCLib *pc );
 PicoCLib *PicoCLibReset( PicoCLib *pc );
 void PicoCLibDown( PicoCLib *pc );
-int PicoCLibMain( PicoCLib *pc, const char *file, ... );
+int PicoCLibMainFromFiles( PicoCLib *pc, const char *file, ... );
+int PicoCLibMainFromSources( PicoCLib *pc, const char *source, ... );
 
 int PicoCLibBindShort( PicoCLib *pc, const char *name, short *val );
 int PicoCLibBindUShort( PicoCLib *pc, const char *name, unsigned short *val );
