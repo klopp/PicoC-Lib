@@ -7,9 +7,41 @@
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
+#define MAIN_EXIT_CODE      "__exit_value"
+#define INT_MAIN_VOID       MAIN_EXIT_CODE " = main();"
+
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
 PicoCLib *PicoCLibReset( PicoCLib *pc ) {
     PicoCLibDown( pc );
     return PicoCLibInit( pc );
+}
+
+void PicoCLibClearFileVars( PicoCLib *pc, const char *file ) {
+    struct TableEntry **EntryPtr;
+    short i;
+    for( i = 0; i < pc->pc.GlobalTable.Size; i++ ) {
+        EntryPtr = &pc->pc.GlobalTable.HashTable[i];
+        while( EntryPtr && *EntryPtr ) {
+            if( ( *EntryPtr )->DeclFileName
+                    && !strcmp( ( *EntryPtr )->DeclFileName, file ) ) {
+                struct TableEntry *DeleteEntry = *EntryPtr;
+                *EntryPtr = DeleteEntry->Next;
+                HeapFreeMem( &pc->pc, DeleteEntry );
+            }
+            else {
+                EntryPtr = &( *EntryPtr )->Next;
+            }
+        }
+    }
+}
+
+void PicoCLibClearMainVars( PicoCLib *pc ) {
+    TableDelete( &pc->pc, &pc->pc.GlobalTable, TableStrRegister( &pc->pc,
+                 "main" ) );
+    TableDelete( &pc->pc, &pc->pc.GlobalTable,
+                 TableStrRegister( &pc->pc, MAIN_EXIT_CODE ) );
 }
 
 PicoCLib *PicoCLibInit( PicoCLib *pc ) {
@@ -33,7 +65,6 @@ void PicoCLibDown( PicoCLib *pc ) {
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
-#define CALL_MAIN_NO_ARGS_RETURN_INT "__exit_value = main();"
 
 static void PicoCLibCallMain( PicoCLib *pc ) {
     struct Value *FuncValue = NULL;
@@ -51,11 +82,11 @@ static void PicoCLibCallMain( PicoCLib *pc ) {
     if( FuncValue->Val->FuncDef.ReturnType != &pc->pc.IntType ) {
         ProgramFailNoParser( &pc->pc, "\"main()\" must return int" );
     }
-    VariableDefinePlatformVar( &pc->pc, NULL, "__exit_value", &pc->pc.IntType,
+    VariableDefinePlatformVar( &pc->pc, NULL, MAIN_EXIT_CODE, &pc->pc.IntType,
                                ( union AnyValue * ) &pc->pc.PicocExitValue, TRUE );
-    PicocParse( &pc->pc, "[main]", CALL_MAIN_NO_ARGS_RETURN_INT,
-                strlen( CALL_MAIN_NO_ARGS_RETURN_INT ), TRUE, TRUE, FALSE,
-                pc->InitDebug );
+    PicocParse( &pc->pc, "[main]", INT_MAIN_VOID, strlen( INT_MAIN_VOID ), TRUE,
+                TRUE,
+                FALSE, pc->InitDebug );
 }
 
 int PicoCLibMainFromSources( PicoCLib *pc, const char *source, ... ) {

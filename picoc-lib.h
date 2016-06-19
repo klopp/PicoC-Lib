@@ -33,6 +33,10 @@ char *PlatformReadFile( Picoc *pc, const char *FileName );
 
 PicoCLib *PicoCLibInit( PicoCLib *pc );
 PicoCLib *PicoCLibReset( PicoCLib *pc );
+
+void PicoCLibClearFileVars( PicoCLib *pc, const char *file );
+void PicoCLibClearMainVars( PicoCLib *pc );
+
 void PicoCLibDown( PicoCLib *pc );
 int PicoCLibMainFromFiles( PicoCLib *pc, const char *file, ... );
 int PicoCLibMainFromSources( PicoCLib *pc, const char *source, ... );
