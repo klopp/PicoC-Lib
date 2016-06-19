@@ -73,10 +73,6 @@ static int PicoCLibBind( PicoCLib *pc, const char *name, void *val,
     return 0;
 }
 
-void PicoCLibUnbind( PicoCLib *pc, const char *name ) {
-    TableDelete( &pc->pc, &pc->pc.GlobalTable, TableStrRegister( &pc->pc, name ) );
-}
-
 int PicoCLibBindShort( PicoCLib *pc, const char *name, short *val ) {
     return PicoCLibBind( pc, name, val, &pc->pc.ShortType );
 }
