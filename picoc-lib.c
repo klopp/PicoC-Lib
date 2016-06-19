@@ -96,7 +96,7 @@ int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val ) {
     return PicoCLibBind( pc, name, val, &pc->pc.UnsignedLongType );
 }
 
-int PicoCLibBindPointer( PicoCLib *pc, const char *name, void *val ) {
+int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val ) {
     if( pc->nPointers >= PICOC_POINTERS_MAX ) {
         fprintf( pc->pc.CStdOut,
                  "PicoCLibBindPointer(): %u pointers already added",

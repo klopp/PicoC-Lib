@@ -21,8 +21,8 @@ int main() {
     PicoCLibInit( &pc );
     PicoCLibBindInt( &pc, "aaa", &aaa );
     PicoCLibBindCharArray( &pc, "bbb", bbb );
-    PicoCLibBindPointer( &pc, "ccc", &ab );
-    PicoCLibBindPointer( &pc, "ddd", &ad );
+    PicoCLibBindArray( &pc, "ccc", &ab );
+    PicoCLibBindArray( &pc, "ddd", &ad );
     rc = PicoCLibMain( &pc, "./t/main.picoc" );
     printf( "rc = %d, exit value: %d, error:\n%s\n", rc, pc.pc.PicocExitValue,
             pc.PicocOutBuf );

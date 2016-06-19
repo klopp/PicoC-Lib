@@ -38,7 +38,7 @@ int PicoCLibBindInt( PicoCLib *pc, const char *name, int *val );
 int PicoCLibBindUInt( PicoCLib *pc, const char *name, unsigned int *val );
 int PicoCLibBindLong( PicoCLib *pc, const char *name, long *val );
 int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val );
-int PicoCLibBindPointer( PicoCLib *pc, const char *name, void *val );
+int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val );
 int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val );
 
 #endif
