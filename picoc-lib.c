@@ -38,8 +38,8 @@ void PicoCLibClearFileVars( PicoCLib *pc, const char *file ) {
 }
 
 void PicoCLibClearMainVars( PicoCLib *pc ) {
-    TableDelete( &pc->pc, &pc->pc.GlobalTable, TableStrRegister( &pc->pc,
-                 "main" ) );
+    TableDelete( &pc->pc, &pc->pc.GlobalTable,
+                 TableStrRegister( &pc->pc, "main" ) );
     TableDelete( &pc->pc, &pc->pc.GlobalTable,
                  TableStrRegister( &pc->pc, MAIN_EXIT_CODE ) );
 }
@@ -65,9 +65,11 @@ void PicoCLibDown( PicoCLib *pc ) {
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
-
-static void PicoCLibCallMain( PicoCLib *pc ) {
+static int PicoCLibCallMain( PicoCLib *pc ) {
     struct Value *FuncValue = NULL;
+    if( PicocPlatformSetExitPoint( &pc->pc ) ) {
+        return 1;
+    }
     if( !VariableDefined( &pc->pc, TableStrRegister( &pc->pc, "main" ) ) ) {
         ProgramFailNoParser( &pc->pc, "\"main()\" is not defined" );
     }
@@ -87,9 +89,24 @@ static void PicoCLibCallMain( PicoCLib *pc ) {
     PicocParse( &pc->pc, "[main]", INT_MAIN_VOID, strlen( INT_MAIN_VOID ), TRUE,
                 TRUE,
                 FALSE, pc->InitDebug );
+    return 0;
 }
 
-int PicoCLibMainFromSources( PicoCLib *pc, const char *source, ... ) {
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
+int PicoCLibMainFromFile( PicoCLib *pc, const char *file ) {
+    return PicoCLibLoadFiles( pc, file, NULL ) ? 1 : PicoCLibCallMain( pc );
+}
+
+int PicoCLibMainFromSource( PicoCLib *pc, const char *source ) {
+    return PicoCLibLoadSources( pc, source, NULL ) ? 1 : PicoCLibCallMain( pc );
+}
+
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
+int PicoCLibLoadSources( PicoCLib *pc, const char *source, ... ) {
     va_list ap;
     char file[0x20];
     unsigned int idx = 1;
@@ -105,12 +122,15 @@ int PicoCLibMainFromSources( PicoCLib *pc, const char *source, ... ) {
                     pc->InitDebug );
         current = va_arg( ap, char * );
     }
-    PicoCLibCallMain( pc );
+    //PicoCLibCallMain( pc );
     va_end( ap );
     return 0;
 }
 
-int PicoCLibMainFromFiles( PicoCLib *pc, const char *file, ... ) {
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
+int PicoCLibLoadFiles( PicoCLib *pc, const char *file, ... ) {
     va_list ap;
     const char *current = file;
     va_start( ap, file );
@@ -129,7 +149,7 @@ int PicoCLibMainFromFiles( PicoCLib *pc, const char *file, ... ) {
                     TRUE, pc->InitDebug );
         current = va_arg( ap, char * );
     }
-    PicoCLibCallMain( pc );
+    //PicoCLibCallMain( pc );
     va_end( ap );
     return 0;
 }

@@ -18,8 +18,8 @@ int main() {
     PicoCLibBindCharArray( &pc, "bbb", bbb );
     PicoCLibBindArray( &pc, "ccc", &a );
     PicoCLibBindArray( &pc, "ddd", &b );
-    rc = PicoCLibMainFromFiles( &pc, "./t/hello-bye.picoc", "./t/main.picoc",
-                                NULL );
+    PicoCLibLoadFiles( &pc, "./t/hello-bye.picoc", NULL );
+    rc = PicoCLibMainFromFile( &pc, "./t/main.picoc" );
     printf( "rc = %d, exit value: %d, error:\n%s\n", rc, pc.pc.PicocExitValue,
             pc.PicocOutBuf );
     printf( "aaa: %d, bbb: %s, [%d:%d], [%d:%d]\n", aaa, bbb, a.a, a.b, b.a,
@@ -27,7 +27,7 @@ int main() {
     PicoCLibClearFileVars( &pc, "./t/main.picoc.h" );
     PicoCLibClearMainVars( &pc );
     aaa = 6;
-    rc = PicoCLibMainFromFiles( &pc, "./t/main.picoc", NULL );
+    rc = PicoCLibMainFromFile( &pc, "./t/main.picoc" );
     printf( "rc = %d, exit value: %d, error:\n%s\n", rc, pc.pc.PicocExitValue,
             pc.PicocOutBuf );
     PicoCLibDown( &pc );

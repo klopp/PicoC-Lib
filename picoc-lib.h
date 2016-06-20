@@ -32,14 +32,17 @@ typedef struct _PicoCLib {
 char *PlatformReadFile( Picoc *pc, const char *FileName );
 
 PicoCLib *PicoCLibInit( PicoCLib *pc );
+void PicoCLibDown( PicoCLib *pc );
 PicoCLib *PicoCLibReset( PicoCLib *pc );
 
 void PicoCLibClearFileVars( PicoCLib *pc, const char *file );
 void PicoCLibClearMainVars( PicoCLib *pc );
 
-void PicoCLibDown( PicoCLib *pc );
-int PicoCLibMainFromFiles( PicoCLib *pc, const char *file, ... );
-int PicoCLibMainFromSources( PicoCLib *pc, const char *source, ... );
+int PicoCLibMainFromFile( PicoCLib *pc, const char *file );
+int PicoCLibMainFromSource( PicoCLib *pc, const char *source );
+
+int PicoCLibLoadFiles( PicoCLib *pc, const char *file, ... );
+int PicoCLibLoadSources( PicoCLib *pc, const char *source, ... );
 
 int PicoCLibBindShort( PicoCLib *pc, const char *name, short *val );
 int PicoCLibBindUShort( PicoCLib *pc, const char *name, unsigned short *val );
