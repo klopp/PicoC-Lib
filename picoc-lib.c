@@ -117,6 +117,7 @@ int PicoCLibLoadSources( PicoCLib *pc, const char *source, ... ) {
     unsigned int idx = 1;
     const char *current = source;
     va_start( ap, source );
+    fflush( pc->pc.CStdOut );
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         va_end( ap );
         return 1;
@@ -139,6 +140,7 @@ int PicoCLibLoadFiles( PicoCLib *pc, const char *file, ... ) {
     va_list ap;
     const char *current = file;
     va_start( ap, file );
+    fflush( pc->pc.CStdOut );
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         va_end( ap );
         return 1;
