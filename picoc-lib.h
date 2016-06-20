@@ -7,9 +7,14 @@
 #define PICOC_LIB_H_
 
 #include "../picoc/picoc.h"
+#include <limits.h>
+
+#ifndef UNIX_HOST
+# define PATH_MAX MAX_PATH
+#endif
 
 #define     PICOC_STACK_SIZE            1024*1024*16
-#define     PICOC_OUTBUF_SIZE           1024*4
+#define     PICOC_OUTBUF_SIZE           PATH_MAX+PATH_MAX
 #define     PICOC_ARRAY_POINTERS_MAX    64
 
 #ifdef UNIX_HOST
