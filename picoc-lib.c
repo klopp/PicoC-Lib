@@ -88,7 +88,12 @@ static int PicoCLibCallMain( PicoCLib *pc ) {
                                ( union AnyValue * ) &pc->pc.PicocExitValue, TRUE );
     PicocParse( &pc->pc, "[main]", INT_MAIN_VOID, strlen( INT_MAIN_VOID ), TRUE,
                 TRUE,
-                FALSE, pc->InitDebug );
+                FALSE,
+#ifndef NO_DEBUGGER
+                pc->InitDebug );
+#else
+                FALSE );
+#endif
     return 0;
 }
 
@@ -119,7 +124,11 @@ int PicoCLibLoadSources( PicoCLib *pc, const char *source, ... ) {
     while( current ) {
         sprintf( file, "[source/%04u]", idx );
         PicocParse( &pc->pc, file, current, strlen( current ), TRUE, FALSE, TRUE,
+#ifndef NO_DEBUGGER
                     pc->InitDebug );
+#else
+                    FALSE );
+#endif
         current = va_arg( ap, char * );
     }
     //PicoCLibCallMain( pc );
@@ -146,7 +155,12 @@ int PicoCLibLoadFiles( PicoCLib *pc, const char *file, ... ) {
             SourceStr[1] = '/';
         }
         PicocParse( &pc->pc, current, SourceStr, strlen( SourceStr ), TRUE, FALSE,
-                    TRUE, pc->InitDebug );
+                    TRUE,
+#ifndef NO_DEBUGGER
+                    pc->InitDebug );
+#else
+                    FALSE );
+#endif
         current = va_arg( ap, char * );
     }
     //PicoCLibCallMain( pc );

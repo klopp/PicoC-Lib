@@ -20,7 +20,9 @@
 
 typedef struct _PicoCLib {
     Picoc pc;
+#ifndef NO_DEBUGGER
     int InitDebug;
+#endif
     void *ArrayPointers[PICOC_ARRAY_POINTERS_MAX];
     size_t nArrayPointers;
     char PicocOutBuf[PICOC_OUTBUF_SIZE];
