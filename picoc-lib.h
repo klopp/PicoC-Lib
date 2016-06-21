@@ -16,6 +16,7 @@
 # include <stdarg.h>
 # define PICOC_DEV_NULL   "/dev/null"
 #else
+# include <windows.h>
 # define PICOC_DEV_NULL   "NUL"
 # define PATH_MAX       MAX_PATH
 #endif
