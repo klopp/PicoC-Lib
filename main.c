@@ -18,13 +18,23 @@ int main() {
     PicoCLibBindCharArray( &pc, "bbb", bbb );
     PicoCLibBindArray( &pc, "ccc", &a );
     PicoCLibBindArray( &pc, "ddd", &b );
-    PicoCLibLoadFiles( &pc, "./t/hello-bye.picoc", NULL );
+    rc = PicoCLibLoadFiles( &pc, "./t/hello-bye.picoc", NULL );
+    if( rc ) {
+        printf( "1) rc = %d, exit value: %d, error:\n%s\n", rc,
+                pc.pc.PicocExitValue, pc.PicocOutBuf );
+        PicoCLibDown( &pc );
+        return pc.pc.PicocExitValue;
+    }
     /*
      * First main() call
      */
     rc = PicoCLibMainFromFile( &pc, "./t/main.picoc" );
-    printf( "rc = %d, exit value: %d, error:\n%s\n", rc, pc.pc.PicocExitValue,
-            pc.PicocOutBuf );
+    if( rc ) {
+        printf( "2) rc = %d, exit value: %d, error:\n%s\n", rc,
+                pc.pc.PicocExitValue, pc.PicocOutBuf );
+        PicoCLibDown( &pc );
+        return pc.pc.PicocExitValue;
+    }
     printf( "aaa: %d, bbb: %s, [%d:%d], [%d:%d]\n", aaa, bbb, a.a, a.b, b.a,
             b.b );
     /*
@@ -37,8 +47,8 @@ int main() {
      * Second main() call
      */
     rc = PicoCLibMainFromFile( &pc, "./t/main.picoc" );
-    printf( "rc = %d, exit value: %d, error:\n%s\n", rc, pc.pc.PicocExitValue,
-            pc.PicocOutBuf );
+    printf( "3) rc = %d, exit value: %d, error:\n%s\n", rc, pc.pc.PicocExitValue,
+            rc ? pc.PicocOutBuf : "no error" );
     PicoCLibDown( &pc );
     return 0;
 }
