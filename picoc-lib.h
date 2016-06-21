@@ -33,11 +33,6 @@ typedef struct _PicoCLib {
     char PicocOutBuf[PICOC_OUTBUF_SIZE];
 } PicoCLib;
 
-/*
- * From picoc.c
- */
-char *PlatformReadFile( Picoc *pc, const char *FileName );
-
 PicoCLib *PicoCLibInit( PicoCLib *pc );
 void PicoCLibDown( PicoCLib *pc );
 PicoCLib *PicoCLibReset( PicoCLib *pc );
@@ -59,6 +54,11 @@ int PicoCLibBindLong( PicoCLib *pc, const char *name, long *val );
 int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val );
 int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val );
 int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val );
+
+/*
+ * From picoc.c
+ */
+char *PlatformReadFile( Picoc *pc, const char *FileName );
 
 #endif
 
