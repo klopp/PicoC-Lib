@@ -1,0 +1,15 @@
+#include <stdio.h>
+
+int x = 1;
+int y = 1;
+int z = 1;
+
+void hello()
+{
+  printf( "\n[%u] Hello, PicoC-Lib!\n", y++ );
+}
+
+void bye()
+{
+  printf( "[%u] Good bye, PicoC-Lib!\n", z++ );
+}
