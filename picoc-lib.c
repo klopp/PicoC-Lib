@@ -68,7 +68,7 @@ void PicoCLibDown( PicoCLib *pc ) {
 static int _PicoCLibCallMain( PicoCLib *pc ) {
     struct Value *FuncValue = NULL;
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
-        return 1;
+        return -1;
     }
     if( !VariableDefined( &pc->pc, TableStrRegister( &pc->pc, "main" ) ) ) {
         ProgramFailNoParser( &pc->pc, "\"main()\" is not defined" );
@@ -101,11 +101,11 @@ static int _PicoCLibCallMain( PicoCLib *pc ) {
  *
  -----------------------------------------------------------------------------*/
 int PicoCLibMainFromFile( PicoCLib *pc, const char *file ) {
-    return PicoCLibLoadFiles( pc, file, NULL ) ? 1 : _PicoCLibCallMain( pc );
+    return PicoCLibLoadFiles( pc, file, NULL ) ? -1 : _PicoCLibCallMain( pc );
 }
 
 int PicoCLibMainFromSource( PicoCLib *pc, const char *source ) {
-    return PicoCLibLoadSources( pc, source, NULL ) ? 1 : _PicoCLibCallMain( pc );
+    return PicoCLibLoadSources( pc, source, NULL ) ? -1 : _PicoCLibCallMain( pc );
 }
 
 /* -----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ int PicoCLibLoadSources( PicoCLib *pc, const char *source, ... ) {
     fflush( pc->pc.CStdOut );
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         va_end( ap );
-        return 1;
+        return -1;
     }
     while( current ) {
         sprintf( file, "[source/%04u]", idx );
@@ -143,7 +143,7 @@ int PicoCLibLoadFiles( PicoCLib *pc, const char *file, ... ) {
     fflush( pc->pc.CStdOut );
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         va_end( ap );
-        return 1;
+        return -1;
     }
     while( current ) {
         char *SourceStr = PlatformReadFile( &pc->pc, current );
@@ -172,7 +172,7 @@ static int _PicoCLibBind( PicoCLib *pc, const char *name, void *val,
                           struct ValueType *type ) {
     fflush( pc->pc.CStdOut );
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
-        return 1;
+        return -1;
     }
     VariableDefinePlatformVar( &pc->pc, NULL, ( char * ) name, type,
                                ( union AnyValue * ) val, 1 );
@@ -209,7 +209,7 @@ int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val ) {
         fprintf( pc->pc.CStdOut,
                  "PicoCLibBindArray(): %u array pointers already exists",
                  PICOC_ARRAY_POINTERS_MAX );
-        return 1;
+        return -1;
     }
     pc->ArrayPointers[pc->nArrayPointers] = val;
     pc->nArrayPointers++;
