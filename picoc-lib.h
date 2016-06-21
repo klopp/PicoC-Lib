@@ -7,21 +7,24 @@
 #define PICOC_LIB_H_
 
 #include "../picoc/picoc.h"
-#include <limits.h>
 
-#ifndef UNIX_HOST
-# define PATH_MAX MAX_PATH
+#include <string.h>
+#include <stdio.h>
+
+#ifdef __unix
+# include <linux/limits.h>
+# include <stdarg.h>
+# define PICOC_DEV_NULL   "/dev/null"
+#else
+# define PICOC_DEV_NULL   "NUL"
+# define PATH_MAX       MAX_PATH
 #endif
+
+#define TCC_ERROR_BUF_SIZE  PATH_MAX+PATH_MAX
 
 #define     PICOC_STACK_SIZE            1024*1024
 #define     PICOC_OUTBUF_SIZE           PATH_MAX+PATH_MAX
 #define     PICOC_ARRAY_POINTERS_MAX    64
-
-#ifdef UNIX_HOST
-# define PICOC_DEV_NULL "/dev/null"
-#else
-# define PICOC_DEV_NULL "NUL"
-#endif
 
 typedef struct _PicoCLib {
     Picoc pc;
