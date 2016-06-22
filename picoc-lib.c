@@ -310,6 +310,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     const char *s = _PicoCLibGetTypeStr( &pc->pc, ret, &retptr );
     int idx = 1;
     char arg[0x10];
+    union AnyValue args[PICOC_MAX_ARGS];
     fflush( pc->pc.CStdOut );
     if( !s ) {
         fprintf( pc->pc.CStdOut, "invalid return type: \"%d\"!", ret );
@@ -319,24 +320,37 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     if( !ptr ) {
         return rc;
     }
+    memset( args, 0, sizeof( args ) );
     sprintf( call, "__ret__ = %s(", name );
     fflush( pc->pc.CStdOut );
     va_start( ap, fmt );
     while( *fmt ) {
-        sprintf( arg, "__arg__%u", idx++ );
+        sprintf( arg, "__arg__%u", idx );
         strcat( call, arg );
         strcat( call, "," );
         switch( *fmt ) {
             case 'c':
-                rc.Character = va_arg( ap, char );
+                args[idx].Character = va_arg( ap, char );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.CharType,
-                                           &rc,
+                                           &args[idx],
+                                           TRUE );
+                break;
+            case 'C':
+                args[idx].UnsignedCharacter = va_arg( ap, unsigned char );
+                VariableDefinePlatformVar( &pc->pc, NULL, arg,
+                                           &pc->pc.UnsignedCharType, &args[idx],
                                            TRUE );
                 break;
             case 'i':
-                rc.Character = va_arg( ap, int );
+                args[idx].Integer = va_arg( ap, int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.IntType,
-                                           &rc,
+                                           &args[idx],
+                                           TRUE );
+                break;
+            case 'I':
+                args[idx].UnsignedInteger = va_arg( ap, unsigned int );
+                VariableDefinePlatformVar( &pc->pc, NULL, arg,
+                                           &pc->pc.UnsignedIntType, &rc,
                                            TRUE );
                 break;
             case 's':
@@ -346,15 +360,27 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
             case 'p':
                 break;
             case 'z':
+                args[idx].Pointer = va_arg( ap, char * );
+                VariableDefinePlatformVar( &pc->pc, NULL, arg,
+                                           pc->pc.CharArrayType, args[idx].Pointer,
+                                           TRUE );
                 break;
             default:
-                fprintf( pc->pc.CStdOut, "invalid argument type: \"%c\"!", *fmt );
                 va_end( ap );
+                fprintf( pc->pc.CStdOut, "invalid argument type: \"%c\"!", *fmt );
                 _PicoCLibCleanFunctionVars( pc );
                 return rc;
                 break;
         }
         fmt++;
+        idx++;
+        if( idx >= PICOC_MAX_ARGS ) {
+            va_end( ap );
+            fprintf( pc->pc.CStdOut, "too many arguments, %u max!",
+                     PICOC_MAX_ARGS );
+            _PicoCLibCleanFunctionVars( pc );
+            return rc;
+        }
     }
     va_end( ap );
     VariableDefinePlatformVar( &pc->pc, NULL, "__ret__", retptr, &rc,
