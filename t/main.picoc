@@ -4,9 +4,7 @@
 
 int assa = 0;
 
-int main = 9;
-
-int zmain() {
+int main() {
     ab *abc = ccc;
     hello();
     printf( "aaa = %d, bbb = %s, ", aaa, bbb );

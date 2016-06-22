@@ -15,9 +15,7 @@ void bye() {
 }
 
 int xx( int x, char *ss, ab *abc ) {
-    //ab *abc = (ab *)AB;
     int rc = x + x * x;
     printf( "xx(%d,%s,[%d,%d]) = %d\n", x, ss, abc->a, abc->b, rc );
-    //printf( "xx(%d,%s) = %d\n", x, ss, rc );
     return rc;
 }
