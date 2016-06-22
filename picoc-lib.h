@@ -26,6 +26,8 @@
 #define     PICOC_STACK_SIZE            1024*1024
 #define     PICOC_OUTBUF_SIZE           PATH_MAX+PATH_MAX
 #define     PICOC_ARRAY_POINTERS_MAX    64
+#define     PICOC_CALLSTR_SIZE          256
+#define     PICOC_MAX_ARGS              16
 
 typedef struct _PicoCLib {
     Picoc pc;
@@ -59,7 +61,8 @@ int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val );
 int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val );
 int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val );
 
-void *PicoCLibGetFunction( PicoCLib *pc, const char *name );
+union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
+                                             const char *name, const char *fmt, ... );
 
 /*
  * From picoc.c
