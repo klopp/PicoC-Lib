@@ -223,6 +223,27 @@ int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val ) {
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
+void *PicoCLibGetFunction( PicoCLib *pc, const char *name ) {
+    struct Value *LVal;
+    if( PicocPlatformSetExitPoint( &pc->pc ) ) {
+        return NULL;
+    }
+    fflush( pc->pc.CStdOut );
+    if( !VariableDefined( &pc->pc, TableStrRegister( &pc->pc, name ) ) ) {
+        fprintf( pc->pc.CStdOut, "\"%s\" is not defined!", name );
+        return NULL;
+    }
+    VariableGet( &pc->pc, NULL, TableStrRegister( &pc->pc, name ), &LVal );
+    if( LVal->Typ->Base != TypeFunction ) {
+        fprintf( pc->pc.CStdOut, "\"%s\" is not a function!", name );
+        return NULL;
+    }
+    return NULL; /*LVal->Val->Pointer;*/
+}
+
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
 #if defined(NO_DEBUGGER)
 void DebugCheckStatement( struct ParseState *Parser ) {
     ( void ) Parser;

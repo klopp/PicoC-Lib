@@ -13,6 +13,7 @@ int main() {
     char bbb[16] = { 'b', 'B', 0 };
     ab a = { 33, 44 };
     ab b = { 55, 66 };
+    int ( *xx )( int ) = NULL;
     PicoCLibInit( &pc );
     PicoCLibBindInt( &pc, "aaa", &aaa );
     PicoCLibBindCharArray( &pc, "bbb", bbb );
@@ -24,6 +25,14 @@ int main() {
                 pc.pc.PicocExitValue, pc.PicocOutBuf );
         PicoCLibDown( &pc );
         return pc.pc.PicocExitValue;
+    }
+    xx = PicoCLibGetFunction( &pc, "xx" );
+    if( !xx ) {
+        printf( "error: %s\n", pc.PicocOutBuf );
+    }
+    else {
+        rc = xx( 11 );
+        printf( "rc = xx(11) = %d\n", rc );
     }
     /*
      * First main() call

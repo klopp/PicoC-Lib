@@ -59,6 +59,8 @@ int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val );
 int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val );
 int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val );
 
+void *PicoCLibGetFunction( PicoCLib *pc, const char *name );
+
 /*
  * From picoc.c
  */
