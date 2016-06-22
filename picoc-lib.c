@@ -21,8 +21,10 @@ PicoCLib *PicoCLibReset( PicoCLib *pc ) {
 void PicoCLibClearFileVars( PicoCLib *pc, const char *file ) {
     struct TableEntry **EntryPtr;
     short i;
+
     for( i = 0; i < pc->pc.GlobalTable.Size; i++ ) {
         EntryPtr = &pc->pc.GlobalTable.HashTable[i];
+
         while( EntryPtr && *EntryPtr ) {
             if( ( *EntryPtr )->DeclFileName
                     && !strcmp( ( *EntryPtr )->DeclFileName, file ) ) {
@@ -70,23 +72,30 @@ void PicoCLibDown( PicoCLib *pc ) {
  -----------------------------------------------------------------------------*/
 static int _PicoCLibCallMain( PicoCLib *pc ) {
     struct Value *FuncValue = NULL;
+
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         return -1;
     }
+
     if( !VariableDefined( &pc->pc, TableStrRegister( &pc->pc, "main" ) ) ) {
         ProgramFailNoParser( &pc->pc, "\"main()\" is not defined" );
     }
+
     VariableGet( &pc->pc, NULL, TableStrRegister( &pc->pc, "main" ), &FuncValue );
+
     if( FuncValue->Typ->Base != TypeFunction ) {
         ProgramFailNoParser( &pc->pc,
                              "\"main\" is not a function - can't call it" );
     }
+
     if( FuncValue->Val->FuncDef.NumParams != 0 ) {
         ProgramFailNoParser( &pc->pc, "\"main()\" can not have arguments" );
     }
+
     if( FuncValue->Val->FuncDef.ReturnType != &pc->pc.IntType ) {
         ProgramFailNoParser( &pc->pc, "\"main()\" must return int" );
     }
+
     VariableDefinePlatformVar( &pc->pc, NULL, MAIN_EXIT_CODE, &pc->pc.IntType,
                                ( union AnyValue * ) &pc->pc.PicocExitValue, TRUE );
     PicocParse( &pc->pc, "[main]", INT_MAIN_VOID, strlen( INT_MAIN_VOID ), TRUE,
@@ -117,16 +126,19 @@ int PicoCLibLoadSources( PicoCLib *pc, const char *source, ... ) {
     const char *current = source;
     va_start( ap, source );
     fflush( pc->pc.CStdOut );
+
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         va_end( ap );
         return -1;
     }
+
     while( current ) {
         sprintf( file, "[source/%04u]", idx );
         PicocParse( &pc->pc, file, current, strlen( current ), TRUE, FALSE, TRUE,
                     pc->InitDebug );
         current = va_arg( ap, char * );
     }
+
     va_end( ap );
     return 0;
 }
@@ -136,22 +148,27 @@ int PicoCLibLoadFiles( PicoCLib *pc, const char *file, ... ) {
     const char *current = file;
     va_start( ap, file );
     fflush( pc->pc.CStdOut );
+
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         va_end( ap );
         return -1;
     }
+
     while( current ) {
         char *SourceStr = PlatformReadFile( &pc->pc, current );
+
         /* ignore "#!/path/to/picoc" .. by replacing the "#!" with "//" */
         if( SourceStr && SourceStr[0] == '#' && SourceStr[1] == '!' ) {
             SourceStr[0] = '/';
             SourceStr[1] = '/';
         }
+
         PicocParse( &pc->pc, current, SourceStr, strlen( SourceStr ), TRUE, FALSE,
                     TRUE,
                     pc->InitDebug );
         current = va_arg( ap, char * );
     }
+
     va_end( ap );
     return 0;
 }
@@ -162,9 +179,11 @@ int PicoCLibLoadFiles( PicoCLib *pc, const char *file, ... ) {
 static int _PicoCLibBind( PicoCLib *pc, const char *name, void *val,
                           struct ValueType *type ) {
     fflush( pc->pc.CStdOut );
+
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         return -1;
     }
+
     VariableDefinePlatformVar( &pc->pc, NULL, ( char * ) name, type,
                                ( union AnyValue * ) val, 1 );
     return 0;
@@ -202,6 +221,7 @@ int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val ) {
                  PICOC_ARRAY_POINTERS_MAX );
         return -1;
     }
+
     pc->ArrayPointers[pc->nArrayPointers] = val;
     pc->nArrayPointers++;
     return _PicoCLibBind( pc, name, &pc->ArrayPointers[pc->nArrayPointers - 1],
@@ -216,19 +236,25 @@ int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val ) {
  -----------------------------------------------------------------------------*/
 static void *_PicoCLibGetFunction( PicoCLib *pc, const char *name ) {
     struct Value *LVal;
+
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
         return NULL;
     }
+
     fflush( pc->pc.CStdOut );
+
     if( !VariableDefined( &pc->pc, TableStrRegister( &pc->pc, name ) ) ) {
         fprintf( pc->pc.CStdOut, "\"%s\" is not defined!", name );
         return NULL;
     }
+
     VariableGet( &pc->pc, NULL, TableStrRegister( &pc->pc, name ), &LVal );
+
     if( LVal->Typ->Base != TypeFunction ) {
         fprintf( pc->pc.CStdOut, "\"%s\" is not a function!", name );
         return NULL;
     }
+
     return LVal->Val->Pointer;
 }
 
@@ -241,33 +267,43 @@ static const char *_PicoCLibGetTypeStr( Picoc *pc, enum BaseType type,
         case TypeChar:
                 *retptr = &pc->CharType;
             return "char";
+
         case TypeShort:
             *retptr = &pc->ShortType;
             return "short";
+
         case TypeInt:
             *retptr = &pc->IntType;
             return "int";
+
         case TypeLong:
             *retptr = &pc->LongType;
             return "long";
+
         case TypeUnsignedChar:
             *retptr = &pc->UnsignedCharType;
             return "unsigned char";
+
         case TypeUnsignedShort:
             *retptr = &pc->UnsignedShortType;
             return "unsigned short";
+
         case TypeUnsignedInt:
             *retptr = &pc->UnsignedIntType;
             return "unsigned int";
+
         case TypeUnsignedLong:
             *retptr = &pc->UnsignedLongType;
             return "unsigned long";
+
         case TypePointer:
             *retptr = pc->VoidPtrType;
             return "void *";
+
         default:
             break;
     }
+
     return NULL;
 }
 
@@ -276,14 +312,17 @@ static const char *_PicoCLibGetTypeStr( Picoc *pc, enum BaseType type,
  -----------------------------------------------------------------------------*/
 static void _PicoCLibCleanFunctionVars( PicoCLib *pc ) {
     int i;
+
     for( i = 1; i < PICOC_MAX_ARGS; i++ ) {
         char arg[0x10];
         sprintf( arg, "__arg__%u", i );
+
         if( VariableDefined( &pc->pc, TableStrRegister( &pc->pc, arg ) ) ) {
             TableDelete( &pc->pc, &pc->pc.GlobalTable,
                          TableStrRegister( &pc->pc, arg ) );
         }
     }
+
     TableDelete( &pc->pc, &pc->pc.GlobalTable,
                  TableStrRegister( &pc->pc, "__ret__" ) );
 }
@@ -304,24 +343,30 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     union AnyValue args[PICOC_MAX_ARGS];
     pc->pc.PicocExitValue = 0;
     fflush( pc->pc.CStdOut );
+
     if( !s ) {
         fprintf( pc->pc.CStdOut, "invalid return type: \"%d\"!", ret );
         pc->pc.PicocExitValue = -1;
         return rc;
     }
+
     ptr = _PicoCLibGetFunction( pc, name );
+
     if( !ptr ) {
         pc->pc.PicocExitValue = -2;
         return rc;
     }
+
     memset( args, 0, sizeof( args ) );
     sprintf( call, "__ret__ = %s(", name );
     fflush( pc->pc.CStdOut );
     va_start( ap, fmt );
+
     while( *fmt ) {
         sprintf( arg, "__arg__%u", idx );
         strcat( call, arg );
         strcat( call, "," );
+
         switch( *fmt ) {
             case 'c':
                 args[idx].Character = ( char )va_arg( ap, int );
@@ -329,60 +374,70 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                                            &args[idx],
                                            TRUE );
                 break;
+
             case 'C':
                 args[idx].UnsignedCharacter = ( unsigned char )va_arg( ap, unsigned int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg,
                                            &pc->pc.UnsignedCharType, &args[idx],
                                            TRUE );
                 break;
+
             case 's':
                 args[idx].ShortInteger = ( short )va_arg( ap, int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.ShortType,
                                            &args[idx],
                                            TRUE );
                 break;
+
             case 'S':
                 args[idx].UnsignedShortInteger = ( unsigned short )va_arg( ap, int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg,
                                            &pc->pc.UnsignedShortType, &args[idx],
                                            TRUE );
                 break;
+
             case 'i':
                 args[idx].Integer = va_arg( ap, int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.IntType,
                                            &args[idx],
                                            TRUE );
                 break;
+
             case 'I':
                 args[idx].UnsignedInteger = va_arg( ap, unsigned int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg,
                                            &pc->pc.UnsignedIntType, &args[idx],
                                            TRUE );
                 break;
+
             case 'l':
                 args[idx].LongInteger = va_arg( ap, long );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.LongType,
                                            &args[idx],
                                            TRUE );
                 break;
+
             case 'L':
                 args[idx].UnsignedLongInteger = va_arg( ap, unsigned long );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg,
                                            &pc->pc.UnsignedLongType, &args[idx],
                                            TRUE );
                 break;
+
             case 'p':
                 args[idx].Pointer = va_arg( ap, void * );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg,
                                            pc->pc.VoidPtrType, &args[idx],
                                            TRUE );
                 break;
+
             case 'z':
                 args[idx].Pointer = va_arg( ap, char * );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg,
                                            pc->pc.CharArrayType, args[idx].Pointer,
                                            TRUE );
                 break;
+
             default:
                 va_end( ap );
                 fprintf( pc->pc.CStdOut, "invalid argument type: \"%c\"!", *fmt );
@@ -390,8 +445,10 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                 return rc;
                 break;
         }
+
         fmt++;
         idx++;
+
         if( idx >= PICOC_MAX_ARGS ) {
             va_end( ap );
             fprintf( pc->pc.CStdOut, "too many arguments, %u max!",
@@ -401,6 +458,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
             return rc;
         }
     }
+
     va_end( ap );
     VariableDefinePlatformVar( &pc->pc, NULL, "__ret__", retptr, &rc,
                                TRUE );

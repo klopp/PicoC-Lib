@@ -2,28 +2,25 @@
 
 #include <stdio.h>
 
-int main()
-{
+int assa = 0;
 
-  ab * abc = ccc;
-  hello();
-  printf( "aaa = %d, bbb = %s, ", aaa, bbb );
-  printf( "[%d:%d], ", abc->a, abc->b );
-  
-  abc->a = 44; abc->b = 55;
-  
-  abc = ddd;
-  printf( "[%d:%d]\n", abc->a, abc->b );
-  
-  abc->a = 66; abc->b = 77;
-  
-  z++; y++;
-  
-  strcpy( bbb,"DEADBABE");
-  
-  aaa = 666;
+int main = 9;
 
-  bye();
-    
-  return 2;
+int zmain() {
+    ab *abc = ccc;
+    hello();
+    printf( "aaa = %d, bbb = %s, ", aaa, bbb );
+    printf( "[%d:%d], ", abc->a, abc->b );
+    abc->a = 44;
+    abc->b = 55;
+    abc = ddd;
+    printf( "[%d:%d]\n", abc->a, abc->b );
+    abc->a = 66;
+    abc->b = 77;
+    z++;
+    y++;
+    strcpy( bbb, "DEADBABE" );
+    aaa = 666;
+    bye();
+    return 2;
 }
