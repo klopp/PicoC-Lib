@@ -302,13 +302,16 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     int idx = 1;
     char arg[0x10];
     union AnyValue args[PICOC_MAX_ARGS];
+    pc->pc.PicocExitValue = 0;
     fflush( pc->pc.CStdOut );
     if( !s ) {
         fprintf( pc->pc.CStdOut, "invalid return type: \"%d\"!", ret );
+        pc->pc.PicocExitValue = -1;
         return rc;
     }
     ptr = _PicoCLibGetFunction( pc, name );
     if( !ptr ) {
+        pc->pc.PicocExitValue = -2;
         return rc;
     }
     memset( args, 0, sizeof( args ) );
@@ -321,25 +324,25 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
         strcat( call, "," );
         switch( *fmt ) {
             case 'c':
-                args[idx].Character = va_arg( ap, char );
+                args[idx].Character = ( char )va_arg( ap, int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.CharType,
                                            &args[idx],
                                            TRUE );
                 break;
             case 'C':
-                args[idx].UnsignedCharacter = va_arg( ap, unsigned char );
+                args[idx].UnsignedCharacter = ( unsigned char )va_arg( ap, unsigned int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg,
                                            &pc->pc.UnsignedCharType, &args[idx],
                                            TRUE );
                 break;
             case 's':
-                args[idx].ShortInteger = va_arg( ap, short );
+                args[idx].ShortInteger = ( short )va_arg( ap, int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.ShortType,
                                            &args[idx],
                                            TRUE );
                 break;
             case 'S':
-                args[idx].UnsignedShortInteger = va_arg( ap, unsigned short );
+                args[idx].UnsignedShortInteger = ( unsigned short )va_arg( ap, int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg,
                                            &pc->pc.UnsignedShortType, &args[idx],
                                            TRUE );
@@ -394,6 +397,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
             fprintf( pc->pc.CStdOut, "too many arguments, %u max!",
                      PICOC_MAX_ARGS );
             _PicoCLibCleanFunctionVars( pc );
+            pc->pc.PicocExitValue = -3;
             return rc;
         }
     }
@@ -402,7 +406,6 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                                TRUE );
     call[strlen( call ) - 1] = 0;
     strcat( call, ");" );
-    printf( "%s\n", call );
     PicocParse( &pc->pc, name, call, strlen( call ), TRUE,
                 TRUE,
                 FALSE,

@@ -59,6 +59,15 @@ int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val );
 int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val );
 int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val );
 
+/*
+ * format (uppercase for unsigned):
+ *  c - char
+ *  i - int
+ *  l - long
+ *  p - pointer
+ *  z - char array (string)
+ *  Set pc->pc.PicocExitValue to != 0 on errors;
+ */
 union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                                              const char *name, const char *fmt, ... );
 
