@@ -51,6 +51,9 @@ PicoCLib *PicoCLibInit( PicoCLib *pc ) {
     pc->nArrayPointers = 0;
     pc->pc.CStdOut = fopen( PICOC_DEV_NULL, "a" );
     setvbuf( pc->pc.CStdOut, pc->PicocOutBuf, _IOFBF, PICOC_OUTBUF_SIZE );
+#ifndef NO_DEBUGGER
+    pc->InitDebug = 1;
+#endif
     return pc;
 }
 
@@ -89,11 +92,7 @@ static int _PicoCLibCallMain( PicoCLib *pc ) {
     PicocParse( &pc->pc, "[main]", INT_MAIN_VOID, strlen( INT_MAIN_VOID ), TRUE,
                 TRUE,
                 FALSE,
-#ifndef NO_DEBUGGER
                 pc->InitDebug );
-#else
-                FALSE );
-#endif
     return 0;
 }
 
@@ -125,11 +124,7 @@ int PicoCLibLoadSources( PicoCLib *pc, const char *source, ... ) {
     while( current ) {
         sprintf( file, "[source/%04u]", idx );
         PicocParse( &pc->pc, file, current, strlen( current ), TRUE, FALSE, TRUE,
-#ifndef NO_DEBUGGER
                     pc->InitDebug );
-#else
-                    FALSE );
-#endif
         current = va_arg( ap, char * );
     }
     va_end( ap );
@@ -154,11 +149,7 @@ int PicoCLibLoadFiles( PicoCLib *pc, const char *file, ... ) {
         }
         PicocParse( &pc->pc, current, SourceStr, strlen( SourceStr ), TRUE, FALSE,
                     TRUE,
-#ifndef NO_DEBUGGER
                     pc->InitDebug );
-#else
-                    FALSE );
-#endif
         current = va_arg( ap, char * );
     }
     va_end( ap );
@@ -341,6 +332,18 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                                            &pc->pc.UnsignedCharType, &args[idx],
                                            TRUE );
                 break;
+            case 's':
+                args[idx].ShortInteger = va_arg( ap, short );
+                VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.ShortType,
+                                           &args[idx],
+                                           TRUE );
+                break;
+            case 'S':
+                args[idx].UnsignedShortInteger = va_arg( ap, unsigned short );
+                VariableDefinePlatformVar( &pc->pc, NULL, arg,
+                                           &pc->pc.UnsignedShortType, &args[idx],
+                                           TRUE );
+                break;
             case 'i':
                 args[idx].Integer = va_arg( ap, int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.IntType,
@@ -350,14 +353,26 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
             case 'I':
                 args[idx].UnsignedInteger = va_arg( ap, unsigned int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg,
-                                           &pc->pc.UnsignedIntType, &rc,
+                                           &pc->pc.UnsignedIntType, &args[idx],
                                            TRUE );
                 break;
-            case 's':
-                break;
             case 'l':
+                args[idx].LongInteger = va_arg( ap, long );
+                VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.LongType,
+                                           &args[idx],
+                                           TRUE );
+                break;
+            case 'L':
+                args[idx].UnsignedLongInteger = va_arg( ap, unsigned long );
+                VariableDefinePlatformVar( &pc->pc, NULL, arg,
+                                           &pc->pc.UnsignedLongType, &args[idx],
+                                           TRUE );
                 break;
             case 'p':
+                args[idx].Pointer = va_arg( ap, void * );
+                VariableDefinePlatformVar( &pc->pc, NULL, arg,
+                                           pc->pc.VoidPtrType, args[idx].Pointer,
+                                           TRUE );
                 break;
             case 'z':
                 args[idx].Pointer = va_arg( ap, char * );
@@ -391,11 +406,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     PicocParse( &pc->pc, name, call, strlen( call ), TRUE,
                 TRUE,
                 FALSE,
-#ifndef NO_DEBUGGER
                 pc->InitDebug );
-#else
-                FALSE );
-#endif
     _PicoCLibCleanFunctionVars( pc );
     return rc;
 }
