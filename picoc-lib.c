@@ -371,7 +371,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
             case 'p':
                 args[idx].Pointer = va_arg( ap, void * );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg,
-                                           pc->pc.VoidPtrType, args[idx].Pointer,
+                                           pc->pc.VoidPtrType, &args[idx],
                                            TRUE );
                 break;
             case 'z':
