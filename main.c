@@ -15,6 +15,7 @@ int main() {
     ab b = { 55, 66 };
     //int ( *xx )( int ) = NULL;
     union AnyValue av;
+    PicoCLibFunc *vf;
     PicoCLibInit( &pc );
     PicoCLibBindInt( &pc, "aaa", &aaa );
     PicoCLibBindCharArray( &pc, "bbb", bbb );
@@ -32,10 +33,26 @@ int main() {
     /*
      * External function call
      */
-    av = PicoCLibCallFunction( &pc, TypeInt, "xx", "i,z p", 1, "xyz", &a );
+    /*
+     * typedef struct _PicoCLibFunc
+     * {
+     *      PicoCLib *pc;
+     *      char callstr[PICOC_CALLSTR_SIZE];
+     *      const char fmt[PICOC_MAX_ARGS+1];
+     *      union AnyValue rc;
+     * } PicoCLibFunc;
+     *
+     * xx = PicoCLibFunction( &pc, "xx", "i,z,p" );
+     * rc = PicoCLibCall( xx, 1, "xyz", &a );
+     *
+     */
+    vf = PicoCLibFunction( &pc, TypeInt, "xx", "i:z:p" );
+    rc = PicoCLibCall( vf, 1, "xyz", &a );
 
-    if( pc.pc.PicocExitValue ) {
-        printf( "a) exit value: %d, error:\n%s\n", pc.pc.PicocExitValue,
+    //    av = PicoCLibCallFunction( &pc, TypeInt, "xx", "i,z p", 1, "xyz", &a );
+
+    if( rc ) {
+        printf( "a) exit value: %d, error:\n%s\n", rc,
                 pc.PicocOutBuf );
         PicoCLibDown( &pc );
         return pc.pc.PicocExitValue;
@@ -44,15 +61,15 @@ int main() {
         printf( "OK, 'int xx(...)' return %d\n", av.Integer );
     }
 
-    PicoCLibCallFunction( &pc, TypeVoid, "voidfunc", NULL );
-
-    if( pc.pc.PicocExitValue ) {
-        printf( "b) exit value: %d, error:\n%s\n", pc.pc.PicocExitValue,
-                pc.PicocOutBuf );
-        PicoCLibDown( &pc );
-        return pc.pc.PicocExitValue;
-    }
-
+    /*
+        PicoCLibCallFunction( &pc, TypeVoid, "voidfunc", NULL );
+        if( pc.pc.PicocExitValue ) {
+            printf( "b) exit value: %d, error:\n%s\n", pc.pc.PicocExitValue,
+                    pc.PicocOutBuf );
+            PicoCLibDown( &pc );
+            return pc.pc.PicocExitValue;
+        }
+    */
     /*
      * First main() call
      */
@@ -76,7 +93,7 @@ int main() {
     /*
      * Second main() call
      */
-    PicoCLibUnbindArray( &pc, &a );
+    //PicoCLibUnbindArray( &pc, &a );
     rc = PicoCLibMainFromFile( &pc, "./t/main.picoc" );
 
     if( rc ) {

@@ -358,198 +358,377 @@ static const char *_PicoCLibGetTypeData( Picoc *pc, enum BaseType type,
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
-static void _PicoCLibClearFunctionVars( PicoCLib *pc ) {
-    int i;
+static void _PicoCLibClearFunctionVars( PicoCLibFunc *function ) {
+    unsigned i;
+    char arg[sizeof( PICOC_FUNCTION_ARG ) + 8];
 
-    for( i = 1; i < PICOC_MAX_ARGS; i++ ) {
-        char arg[sizeof( PICOC_FUNCTION_ARG ) + 8];
+    for( i = function->argmax; i > function->argmin; --i ) {
         sprintf( arg, PICOC_FUNCTION_ARG, i );
-        _PicoCLibClearVar( pc, arg );
+        _PicoCLibClearVar( function->pc, arg );
     }
 
-    _PicoCLibClearVar( pc, PICOC_FUNCTION_RET );
+    sprintf( arg, PICOC_FUNCTION_RET, function->argmin - 1 );
+    _PicoCLibClearVar( function->pc, PICOC_FUNCTION_RET );
 }
 
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
-union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
-                                             const char *name, const char *fmt, ... ) {
-    struct Value *funcptr;
-    char call[PICOC_CALLSTR_SIZE];
-    union AnyValue rc = { 0 };
-    struct ValueType *retptr;
-    int idx = 0;
-    char arg[sizeof( PICOC_FUNCTION_ARG ) + 8];
-    union AnyValue args[PICOC_MAX_ARGS];
-    va_list ap;
+PicoCLibFunc *PicoCLibFunction( PicoCLib *pc, enum BaseType ret,
+                                const char *name,
+                                const char *fmt ) {
     const char *s;
+    PicoCLibFunc *function;
+    int idx = 0;
     fflush( pc->pc.CStdOut );
-    pc->pc.PicocExitValue = 0;
 
     if( strlen( name ) > PICOC_FUNCNAME_MAX ) {
         fprintf( pc->pc.CStdOut, "function name is too long!" );
-        pc->pc.PicocExitValue = -4;
-        return rc;
+        return NULL;
     }
 
-    s = _PicoCLibGetTypeData( &pc->pc, ret, &retptr );
+    function = HeapAllocMem( &pc->pc, sizeof( PicoCLibFunc ) );
+
+    if( function == NULL ) {
+        fprintf( pc->pc.CStdOut, "not enough memory!" );
+        return NULL;
+    }
+
+    memset( function, 0, sizeof( PicoCLibFunc ) );
+    s = _PicoCLibGetTypeData( &pc->pc, ret, &function->retptr );
 
     if( !s ) {
         fprintf( pc->pc.CStdOut, "invalid return type: %d!", ret );
-        pc->pc.PicocExitValue = -1;
-        return rc;
+        HeapFreeMem( &pc->pc, function );
+        return NULL;
     }
 
-    funcptr = _PicoCLibGetFunction( pc, name );
+    function->pc = pc;
 
-    if( !funcptr ) {
-        pc->pc.PicocExitValue = -2;
-        return rc;
+    if( function->retptr ) {
+        sprintf( function->callstr, PICOC_FUNCTION_RET, pc->curid++ );
     }
 
-    memset( args, 0, sizeof( args ) );
-    *call = 0;
-
-    if( retptr ) {
-        strcpy( call, PICOC_FUNCTION_RET "=" );
-    }
-
-    strcat( call, name );
-    strcat( call, "(" );
-    fflush( pc->pc.CStdOut );
-    va_start( ap, fmt );
+    strcat( function->callstr, name );
+    strcat( function->callstr, "(" );
+    sprintf( function->name, "%s()", name );
+    function->argmax = function->argmin = pc->curid;
 
     while( fmt && *fmt ) {
-        sprintf( arg, PICOC_FUNCTION_ARG, idx );
+        if( strchr( PICOC_ARG_SEPARATORS, *fmt ) ) {
+            fmt++;
+            continue;
+        }
 
+        sprintf( function->args[idx].name, PICOC_FUNCTION_ARG, pc->curid );
+        function->fmt[idx] = *fmt;
+        strcat( function->callstr, function->args[idx].name );
+        strcat( function->callstr, "," );
+        ++fmt;
+        ++idx;
+
+        if( idx > PICOC_MAX_ARGS ) {
+            fprintf( pc->pc.CStdOut, "too many arguments (%u max)!",
+                     PICOC_MAX_ARGS );
+            HeapFreeMem( &pc->pc, function );
+            return NULL;
+        }
+
+        ++pc->curid;
+        ++function->argmax;
+    }
+
+    if( idx ) {
+        function->callstr[strlen( function->callstr ) - 1] = 0;
+    }
+
+    strcat( function->callstr, ");" );
+    return function;
+}
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
+int PicoCLibCall( PicoCLibFunc *function, ... ) {
+    va_list ap;
+    int idx = 0;
+    char *fmt = function->fmt;
+    Picoc *pc = &function->pc->pc;
+    fflush( pc->CStdOut );
+    va_start( ap, function );
+
+    while( fmt && *fmt ) {
         switch( *fmt ) {
-            case '\t':
-            case '\n':
-            case '\r':
-            case ' ':
-            case ',':
-            case '-':
-            case ':':
-            case ';':
-                fmt++;
-                continue;
-
             case 'c':
-                args[idx].Character = ( char ) va_arg( ap, int );
-                VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.CharType,
-                                           &args[idx],
+                function->args[idx].arg.Character = ( char ) va_arg( ap, int );
+                VariableDefinePlatformVar( pc, NULL, function->args[idx].name, &pc->CharType,
+                                           &function->args[idx].arg,
                                            TRUE );
                 break;
 
-            case 'C':
-                args[idx].UnsignedCharacter = ( unsigned char ) va_arg( ap,
-                                              unsigned int );
-                VariableDefinePlatformVar( &pc->pc, NULL, arg,
-                                           &pc->pc.UnsignedCharType, &args[idx],
-                                           TRUE );
-                break;
+                /*
+                            case 'C':
+                                args[idx].UnsignedCharacter = (unsigned char) va_arg(ap,
+                                        unsigned int);
+                                VariableDefinePlatformVar(&pc->pc, NULL, arg,
+                                        &pc->pc.UnsignedCharType, &args[idx],
+                                        TRUE);
+                                break;
 
-            case 's':
-                args[idx].ShortInteger = ( short ) va_arg( ap, int );
-                VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.ShortType,
-                                           &args[idx],
-                                           TRUE );
-                break;
+                            case 's':
+                                args[idx].ShortInteger = (short) va_arg(ap, int);
+                                VariableDefinePlatformVar(&pc->pc, NULL, arg, &pc->pc.ShortType,
+                                        &args[idx],
+                                        TRUE);
+                                break;
 
-            case 'S':
-                args[idx].UnsignedShortInteger = ( unsigned short ) va_arg( ap,
-                                                 int );
-                VariableDefinePlatformVar( &pc->pc, NULL, arg,
-                                           &pc->pc.UnsignedShortType, &args[idx],
-                                           TRUE );
-                break;
-
+                            case 'S':
+                                args[idx].UnsignedShortInteger = (unsigned short) va_arg(ap,
+                                        int);
+                                VariableDefinePlatformVar(&pc->pc, NULL, arg,
+                                        &pc->pc.UnsignedShortType, &args[idx],
+                                        TRUE);
+                                break;
+                */
             case 'i':
-                args[idx].Integer = va_arg( ap, int );
-                VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.IntType,
-                                           &args[idx],
+                function->args[idx].arg.Integer = va_arg( ap, int );
+                VariableDefinePlatformVar( pc, NULL, function->args[idx].name, &pc->IntType,
+                                           &function->args[idx].arg,
                                            TRUE );
                 break;
 
-            case 'I':
-                args[idx].UnsignedInteger = va_arg( ap, unsigned int );
-                VariableDefinePlatformVar( &pc->pc, NULL, arg,
-                                           &pc->pc.UnsignedIntType, &args[idx],
-                                           TRUE );
-                break;
+                /*
+                            case 'I':
+                                args[idx].UnsignedInteger = va_arg(ap, unsigned int);
+                                VariableDefinePlatformVar(&pc->pc, NULL, arg,
+                                        &pc->pc.UnsignedIntType, &args[idx],
+                                        TRUE);
+                                break;
 
-            case 'l':
-                args[idx].LongInteger = va_arg( ap, long );
-                VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.LongType,
-                                           &args[idx],
-                                           TRUE );
-                break;
+                            case 'l':
+                                args[idx].LongInteger = va_arg(ap, long);
+                                VariableDefinePlatformVar(&pc->pc, NULL, arg, &pc->pc.LongType,
+                                        &args[idx],
+                                        TRUE);
+                                break;
 
-            case 'L':
-                args[idx].UnsignedLongInteger = va_arg( ap, unsigned long );
-                VariableDefinePlatformVar( &pc->pc, NULL, arg,
-                                           &pc->pc.UnsignedLongType, &args[idx],
-                                           TRUE );
-                break;
-
+                            case 'L':
+                                args[idx].UnsignedLongInteger = va_arg(ap, unsigned long);
+                                VariableDefinePlatformVar(&pc->pc, NULL, arg,
+                                        &pc->pc.UnsignedLongType, &args[idx],
+                                        TRUE);
+                                break;
+                */
             case 'p':
-            case 'P':
-                args[idx].Pointer = va_arg( ap, void * );
-                VariableDefinePlatformVar( &pc->pc, NULL, arg,
-                                           pc->pc.VoidPtrType, &args[idx],
+                function->args[idx].arg.Pointer = va_arg( ap, void * );
+                VariableDefinePlatformVar( pc, NULL, function->args[idx].name,
+                                           pc->VoidPtrType, &function->args[idx].arg,
                                            TRUE );
                 break;
 
             case 'z':
-            case 'Z':
-                args[idx].Pointer = va_arg( ap, char * );
-                VariableDefinePlatformVar( &pc->pc, NULL, arg,
-                                           pc->pc.CharArrayType, args[idx].Pointer,
+                function->args[idx].arg.Pointer = va_arg( ap, char * );
+                VariableDefinePlatformVar( pc, NULL, function->args[idx].name,
+                                           pc->CharArrayType, function->args[idx].arg.Pointer,
                                            TRUE );
                 break;
 
             default:
                 va_end( ap );
-                fprintf( pc->pc.CStdOut, "invalid argument type: \"%c\"!", *fmt );
-                _PicoCLibClearFunctionVars( pc );
+                fprintf( pc->CStdOut, "invalid argument type: \"%c\"!", *fmt );
+                _PicoCLibClearFunctionVars( function );
+                return -1;
+        }
+
+        fmt++;
+        idx++;
+    }
+
+    if( function->retptr ) {
+        char ret[sizeof( PICOC_FUNCTION_RET ) + 8];
+        sprintf( ret, PICOC_FUNCTION_RET, function->argmin - 1 );
+        ret[strlen( ret ) - 1] = 0;
+        VariableDefinePlatformVar( pc, NULL, ret, function->retptr,
+                                   &function->rc,
+                                   TRUE );
+    }
+
+    PicocParse( pc, function->name, function->callstr, strlen( function->callstr ),
+                TRUE,
+                TRUE,
+                FALSE, function->pc->InitDebug );
+    _PicoCLibClearFunctionVars( function );
+    va_end( ap );
+    return 0;
+}
+/* -----------------------------------------------------------------------------
+ *
+ -----------------------------------------------------------------------------*/
+/*
+union AnyValue PicoCLibCallFunction(PicoCLib *pc, enum BaseType ret,
+        const char *name, const char *fmt, ...) {
+    char call[PICOC_CALLSTR_SIZE];
+    union AnyValue rc = { 0 };
+    struct ValueType *retptr;
+    int idx = 0;
+    char arg[sizeof( PICOC_FUNCTION_ARG) + 8];
+    union AnyValue args[PICOC_MAX_ARGS];
+    va_list ap;
+    const char *s;
+
+    fflush(pc->pc.CStdOut);
+    pc->pc.PicocExitValue = 0;
+
+    if (strlen(name) > PICOC_FUNCNAME_MAX) {
+        fprintf(pc->pc.CStdOut, "function name is too long!");
+        pc->pc.PicocExitValue = -4;
+        return rc;
+    }
+
+    s = _PicoCLibGetTypeData(&pc->pc, ret, &retptr);
+
+    if (!s) {
+        fprintf(pc->pc.CStdOut, "invalid return type: %d!", ret);
+        pc->pc.PicocExitValue = -1;
+        return rc;
+    }
+
+    memset(args, 0, sizeof(args));
+    *call = 0;
+
+    if (retptr) {
+        strcpy(call, PICOC_FUNCTION_RET "=");
+    }
+
+    strcat(call, name);
+    strcat(call, "(");
+    fflush(pc->pc.CStdOut);
+    va_start(ap, fmt);
+
+    while (fmt && *fmt) {
+        sprintf(arg, PICOC_FUNCTION_ARG, idx);
+
+        if (strchr( PICOC_ARG_SEPARATORS, *fmt)) {
+            fmt++;
+            continue;
+        }
+
+        switch (*fmt) {
+            case 'c':
+                args[idx].Character = (char) va_arg(ap, int);
+                VariableDefinePlatformVar(&pc->pc, NULL, arg, &pc->pc.CharType,
+                        &args[idx],
+                        TRUE);
+                break;
+
+            case 'C':
+                args[idx].UnsignedCharacter = (unsigned char) va_arg(ap,
+                        unsigned int);
+                VariableDefinePlatformVar(&pc->pc, NULL, arg,
+                        &pc->pc.UnsignedCharType, &args[idx],
+                        TRUE);
+                break;
+
+            case 's':
+                args[idx].ShortInteger = (short) va_arg(ap, int);
+                VariableDefinePlatformVar(&pc->pc, NULL, arg, &pc->pc.ShortType,
+                        &args[idx],
+                        TRUE);
+                break;
+
+            case 'S':
+                args[idx].UnsignedShortInteger = (unsigned short) va_arg(ap,
+                        int);
+                VariableDefinePlatformVar(&pc->pc, NULL, arg,
+                        &pc->pc.UnsignedShortType, &args[idx],
+                        TRUE);
+                break;
+
+            case 'i':
+                args[idx].Integer = va_arg(ap, int);
+                VariableDefinePlatformVar(&pc->pc, NULL, arg, &pc->pc.IntType,
+                        &args[idx],
+                        TRUE);
+                break;
+
+            case 'I':
+                args[idx].UnsignedInteger = va_arg(ap, unsigned int);
+                VariableDefinePlatformVar(&pc->pc, NULL, arg,
+                        &pc->pc.UnsignedIntType, &args[idx],
+                        TRUE);
+                break;
+
+            case 'l':
+                args[idx].LongInteger = va_arg(ap, long);
+                VariableDefinePlatformVar(&pc->pc, NULL, arg, &pc->pc.LongType,
+                        &args[idx],
+                        TRUE);
+                break;
+
+            case 'L':
+                args[idx].UnsignedLongInteger = va_arg(ap, unsigned long);
+                VariableDefinePlatformVar(&pc->pc, NULL, arg,
+                        &pc->pc.UnsignedLongType, &args[idx],
+                        TRUE);
+                break;
+
+            case 'p':
+            case 'P':
+                args[idx].Pointer = va_arg(ap, void *);
+                VariableDefinePlatformVar(&pc->pc, NULL, arg,
+                        pc->pc.VoidPtrType, &args[idx],
+                        TRUE);
+                break;
+
+            case 'z':
+            case 'Z':
+                args[idx].Pointer = va_arg(ap, char *);
+                VariableDefinePlatformVar(&pc->pc, NULL, arg,
+                        pc->pc.CharArrayType, args[idx].Pointer,
+                        TRUE);
+                break;
+
+            default:
+                va_end(ap);
+                fprintf(pc->pc.CStdOut, "invalid argument type: \"%c\"!", *fmt);
+                _PicoCLibClearFunctionVars(pc);
                 return rc;
         }
 
-        strcat( call, arg );
-        strcat( call, "," );
+        strcat(call, arg);
+        strcat(call, ",");
         fmt++;
         idx++;
 
-        if( idx > PICOC_MAX_ARGS ) {
-            va_end( ap );
-            fprintf( pc->pc.CStdOut, "too many arguments (%u max)!",
-                     PICOC_MAX_ARGS );
-            _PicoCLibClearFunctionVars( pc );
+        if (idx > PICOC_MAX_ARGS) {
+            va_end(ap);
+            fprintf(pc->pc.CStdOut, "too many arguments (%u max)!",
+            PICOC_MAX_ARGS);
+            _PicoCLibClearFunctionVars(pc);
             pc->pc.PicocExitValue = -3;
             return rc;
         }
     }
 
-    va_end( ap );
+    va_end(ap);
 
-    if( retptr ) {
-        VariableDefinePlatformVar( &pc->pc, NULL, PICOC_FUNCTION_RET, retptr,
-                                   &rc,
-                                   TRUE );
+    if (retptr) {
+        VariableDefinePlatformVar(&pc->pc, NULL, PICOC_FUNCTION_RET, retptr,
+                &rc,
+                TRUE);
     }
 
-    if( idx ) {
-        call[strlen( call ) - 1] = 0;
+    if (idx) {
+        call[strlen(call) - 1] = 0;
     }
 
-    strcat( call, ");" );
-    PicocParse( &pc->pc, name, call, strlen( call ), TRUE,
-                TRUE,
-                FALSE, pc->InitDebug );
-    _PicoCLibClearFunctionVars( pc );
+    strcat(call, ");");
+    PicocParse(&pc->pc, name, call, strlen(call), TRUE,
+    TRUE,
+    FALSE, pc->InitDebug);
+    _PicoCLibClearFunctionVars(pc);
     return rc;
 }
+*/
 
 /* -----------------------------------------------------------------------------
  *
