@@ -41,6 +41,15 @@ int main() {
         return pc.pc.PicocExitValue;
     }
 
+    PicoCLibCallFunction( &pc, TypeVoid, "voidfunc", NULL );
+
+    if( pc.pc.PicocExitValue ) {
+        printf( "a) exit value: %d, error:\n%s\n", pc.pc.PicocExitValue,
+                pc.PicocOutBuf );
+        PicoCLibDown( &pc );
+        return pc.pc.PicocExitValue;
+    }
+
     /*
      * First main() call
      */

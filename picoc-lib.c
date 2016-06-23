@@ -340,7 +340,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     char call[PICOC_CALLSTR_SIZE];
     union AnyValue rc = { 0 };
     struct ValueType *retptr;
-    int idx = 1;
+    int idx = 0;
     char arg[sizeof( FUNCTION_ARG ) + 8];
     union AnyValue args[PICOC_MAX_ARGS];
     pc->pc.PicocExitValue = 0;
@@ -374,7 +374,17 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     va_start( ap, fmt );
 
     while( fmt && *fmt ) {
-        sprintf( arg, FUNCTION_ARG, idx );
+        sprintf( arg, FUNCTION_ARG, ++idx );
+
+        if( idx >= PICOC_MAX_ARGS ) {
+            va_end( ap );
+            fprintf( pc->pc.CStdOut, "too many arguments, %u max!",
+                     PICOC_MAX_ARGS );
+            _PicoCLibClearFunctionVars( pc );
+            pc->pc.PicocExitValue = -3;
+            return rc;
+        }
+
         strcat( call, arg );
         strcat( call, "," );
 
@@ -462,25 +472,19 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
         }
 
         fmt++;
-        idx++;
-
-        if( idx >= PICOC_MAX_ARGS ) {
-            va_end( ap );
-            fprintf( pc->pc.CStdOut, "too many arguments, %u max!",
-                     PICOC_MAX_ARGS );
-            _PicoCLibClearFunctionVars( pc );
-            pc->pc.PicocExitValue = -3;
-            return rc;
-        }
     }
 
     va_end( ap );
 
     if( retptr ) {
-        VariableDefinePlatformVar( &pc->pc, NULL, FUNCTION_RET, retptr, &rc, TRUE );
+        VariableDefinePlatformVar( &pc->pc, NULL, FUNCTION_RET, retptr, &rc,
+                                   TRUE );
     }
 
-    call[strlen( call ) - 1] = 0;
+    if( idx ) {
+        call[strlen( call ) - 1] = 0;
+    }
+
     strcat( call, ");" );
     PicocParse( &pc->pc, name, call, strlen( call ), TRUE,
                 TRUE,
