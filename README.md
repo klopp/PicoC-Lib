@@ -44,6 +44,7 @@
     printf( "After: a = %d, b = %s, c = {%d, %d}\n", a, b, c.a, c.b );
 
     PicoCLibClearFileVars( &pc, mainh );
+    PicoCLibClearFileVars( &pc, main1 );
     PicoCLibClearMainVars( &pc );
     
     printf( "Before: a = %d, b = %s, c = {%d, %d}\n", a, b, c.a, c.b );  
