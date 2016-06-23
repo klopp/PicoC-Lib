@@ -80,10 +80,6 @@ int PicoCLibUnbindArray( PicoCLib *pc, void *val );
  */
 union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                                              const char *name, const char *fmt, ... );
-
-//typedef union AnyValue (*PicoFunction)(...);
-//PicoFunction PicoCLibGetFunction( PicoC)
-
 /*
  * From ../picoc/picoc.c etc
  */
