@@ -40,6 +40,9 @@ int main() {
         PicoCLibDown( &pc );
         return pc.pc.PicocExitValue;
     }
+    else {
+        printf( "OK, 'int xx(...)' return %d\n", av.Integer );
+    }
 
     PicoCLibCallFunction( &pc, TypeVoid, "voidfunc", NULL );
 
