@@ -264,11 +264,12 @@ struct Value *_PicoCLibGetFunction( PicoCLib *pc, const char *name ) {
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
-static const char *_PicoCLibGetTypeStr( Picoc *pc, enum BaseType type,
-                                        struct ValueType **retptr ) {
+static const char *_PicoCLibGetTypeData( Picoc *pc, enum BaseType type,
+        struct ValueType **retptr ) {
+    *retptr = NULL;
+
     switch( type ) {
         case TypeVoid:
-                *retptr = NULL;
             return "void";
 
         case TypeChar:
@@ -352,7 +353,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
         return rc;
     }
 
-    s = _PicoCLibGetTypeStr( &pc->pc, ret, &retptr );
+    s = _PicoCLibGetTypeData( &pc->pc, ret, &retptr );
 
     if( !s ) {
         fprintf( pc->pc.CStdOut, "invalid return type: %d!", ret );

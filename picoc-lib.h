@@ -14,11 +14,11 @@
 #ifdef __unix
 # include <linux/limits.h>
 # include <stdarg.h>
-# define PICOC_DEV_NULL   "/dev/null"
+# define PICOC_DEV_NULL     "/dev/null"
 #else
 # include <windows.h>
-# define PICOC_DEV_NULL   "NUL"
-# define PATH_MAX       MAX_PATH
+# define PICOC_DEV_NULL     "NUL"
+# define PATH_MAX           MAX_PATH
 #endif
 
 #define TCC_ERROR_BUF_SIZE  PATH_MAX+PATH_MAX
@@ -80,7 +80,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                                              const char *name, const char *fmt, ... );
 
 /*
- * From picoc.c
+ * From ../picoc/picoc.c
  */
 char *PlatformReadFile( Picoc *pc, const char *FileName );
 
