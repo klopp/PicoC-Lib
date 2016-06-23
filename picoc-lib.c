@@ -424,12 +424,14 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
         sprintf( arg, PICOC_FUNCTION_ARG, idx );
 
         switch( *fmt ) {
-            case '-':
-            case ',':
-            case ' ':
+            case '\t':
             case '\n':
             case '\r':
-            case '\t':
+            case ' ':
+            case ',':
+            case '-':
+            case ':':
+            case ';':
                 fmt++;
                 continue;
 
