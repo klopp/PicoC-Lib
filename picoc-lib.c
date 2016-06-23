@@ -422,10 +422,17 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
 
     while( fmt && *fmt ) {
         sprintf( arg, PICOC_FUNCTION_ARG, idx );
-        strcat( call, arg );
-        strcat( call, "," );
 
         switch( *fmt ) {
+            case '-':
+            case ',':
+            case ' ':
+            case '\n':
+            case '\r':
+            case '\t':
+                fmt++;
+                continue;
+
             case 'c':
                 args[idx].Character = ( char ) va_arg( ap, int );
                 VariableDefinePlatformVar( &pc->pc, NULL, arg, &pc->pc.CharType,
@@ -505,9 +512,10 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                 fprintf( pc->pc.CStdOut, "invalid argument type: \"%c\"!", *fmt );
                 _PicoCLibClearFunctionVars( pc );
                 return rc;
-                break;
         }
 
+        strcat( call, arg );
+        strcat( call, "," );
         fmt++;
         idx++;
 

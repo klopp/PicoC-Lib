@@ -32,7 +32,7 @@ int main() {
     /*
      * External function call
      */
-    av = PicoCLibCallFunction( &pc, TypeInt, "xx", "izp", 1, "zzz", &a );
+    av = PicoCLibCallFunction( &pc, TypeInt, "xx", "i,z p", 1, "xyz", &a );
 
     if( pc.pc.PicocExitValue ) {
         printf( "a) exit value: %d, error:\n%s\n", pc.pc.PicocExitValue,

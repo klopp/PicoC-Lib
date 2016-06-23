@@ -76,6 +76,7 @@ int PicoCLibUnbindArray( PicoCLib *pc, void *val );
  *  l - long
  *  p,P - pointer
  *  z,Z - char array (string)
+ *  space, ",", "-", \t, \r, \n - separator, skipped
  *  Set pc->pc.PicocExitValue to != 0 on errors;
  */
 union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
