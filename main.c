@@ -19,8 +19,8 @@ int main() {
     PicoCLibInit( &pc );
     PicoCLibBindInt( &pc, "aaa", &aaa );
     PicoCLibBindCharArray( &pc, "bbb", bbb );
-    PicoCLibBindArray( &pc, "ccc", &a );
-    PicoCLibBindArray( &pc, "ddd", &b );
+    PicoCLibBindPointer( &pc, "ccc", &a );
+    PicoCLibBindPointer( &pc, "ddd", &b );
     rc = PicoCLibLoadFiles( &pc, "./t/hello-bye.picoc", NULL );
 
     if( rc ) {

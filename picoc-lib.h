@@ -63,8 +63,18 @@ typedef struct _PicoCLibFunc {
     union AnyValue rc;
 } PicoCLibFunc;
 
+/*
+ * format (uppercase for unsigned):
+ *  c - char
+ *  s - short
+ *  i - int
+ *  l - long
+ *  p - pointer
+ *  z - char array (string)
+ *  PICOC_ARG_SEPARATORS - skipped chars
+ */
 PicoCLibFunc *PicoCLibFunction( PicoCLib *pc, enum BaseType ret,
-                                const char *name, const char *fmt );
+                                const char *name, const char *format );
 int PicoCLibCall( PicoCLibFunc *function, ... );
 
 PicoCLib *PicoCLibInit( PicoCLib *pc );
@@ -86,23 +96,10 @@ int PicoCLibBindInt( PicoCLib *pc, const char *name, int *val );
 int PicoCLibBindUInt( PicoCLib *pc, const char *name, unsigned int *val );
 int PicoCLibBindLong( PicoCLib *pc, const char *name, long *val );
 int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val );
-int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val );
+int PicoCLibBindPointer( PicoCLib *pc, const char *name, void *val );
 int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val );
-int PicoCLibUnbindArray( PicoCLib *pc, void *val );
+int PicoCLibUnbindPointer( PicoCLib *pc, void *val );
 
-/*
- * format (uppercase for unsigned):
- *  c - char
- *  s - short
- *  i - int
- *  l - long
- *  p - pointer
- *  z - char array (string)
- *  space, ",", "-", ":", ";", \t, \r, \n - separator, skipped
- *  Set pc->pc.PicocExitValue to != 0 on errors;
- */
-union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
-                                             const char *name, const char *fmt, ... );
 /*
  * From ../picoc/picoc.c etc
  */

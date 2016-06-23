@@ -224,7 +224,7 @@ int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val ) {
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
-int PicoCLibUnbindArray( PicoCLib *pc, void *val ) {
+int PicoCLibUnbindPointer( PicoCLib *pc, void *val ) {
     size_t i;
 
     for( i = 0; i < PICOC_ARRAY_POINTERS_MAX; i++ ) {
@@ -242,7 +242,7 @@ int PicoCLibUnbindArray( PicoCLib *pc, void *val ) {
     return -1;
 }
 
-int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val ) {
+int PicoCLibBindPointer( PicoCLib *pc, const char *name, void *val ) {
     size_t i;
     fflush( pc->pc.CStdOut );
 
