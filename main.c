@@ -29,20 +29,18 @@ int main() {
         return pc.pc.PicocExitValue;
     }
 
-    av = PicoCLibCallFunction( &pc, TypeInt, "xx", "izp", 1, "zzz", &a );
-    printf( "%d : %s\n", pc.pc.PicocExitValue, pc.PicocOutBuf );
-    PicoCLibDown( &pc );
-    return pc.pc.PicocExitValue;
     /*
-        xx = PicoCLibGetFunction( &pc, "xx" );
-        if( !xx ) {
-            printf( "error: %s\n", pc.PicocOutBuf );
-        }
-        else {
-            rc = xx( 11 );
-            printf( "rc = xx(11) = %d\n", rc );
-        }
-    */
+     * External function call
+     */
+    av = PicoCLibCallFunction( &pc, TypeInt, "xx", "izp", 1, "zzz", &a );
+
+    if( pc.pc.PicocExitValue ) {
+        printf( "a) exit value: %d, error:\n%s\n", pc.pc.PicocExitValue,
+                pc.PicocOutBuf );
+        PicoCLibDown( &pc );
+        return pc.pc.PicocExitValue;
+    }
+
     /*
      * First main() call
      */
@@ -67,8 +65,12 @@ int main() {
      * Second main() call
      */
     rc = PicoCLibMainFromFile( &pc, "./t/main.picoc" );
-    printf( "3) rc = %d, exit value: %d, error:\n%s\n", rc, pc.pc.PicocExitValue,
-            rc ? pc.PicocOutBuf : "no error" );
+
+    if( rc ) {
+        printf( "3) rc = %d, exit value: %d, error:\n%s\n", rc,
+                pc.pc.PicocExitValue, pc.PicocOutBuf );
+    }
+
     PicoCLibDown( &pc );
     return 0;
 }

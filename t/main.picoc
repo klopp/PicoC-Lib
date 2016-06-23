@@ -1,9 +1,5 @@
 #include "./t/main.picoc.h"
 
-#include <stdio.h>
-
-int assa = 0;
-
 int main() {
     ab *abc = ccc;
     hello();
