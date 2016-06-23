@@ -65,6 +65,14 @@ PicoCLib *PicoCLibInit( PicoCLib *pc ) {
 
 void PicoCLibDown( PicoCLib *pc ) {
     if( pc->pc.CStdOut ) {
+        size_t i;
+
+        for( i = 0; i < PICOC_ARRAY_POINTERS_MAX; i++ ) {
+            if( pc->ArrayPointers[i].name ) {
+                HeapFreeMem( &pc->pc, pc->ArrayPointers[i].name );
+            }
+        }
+
         fclose( pc->pc.CStdOut );
         PicocCleanup( &pc->pc );
         pc->pc.CStdOut = NULL;
@@ -216,18 +224,46 @@ int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val ) {
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
-int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val ) {
+int PicoCLibUnbindArray( PicoCLib *pc, void *val ) {
     size_t i;
 
     for( i = 0; i < PICOC_ARRAY_POINTERS_MAX; i++ ) {
-        if( !pc->ArrayPointers[i] ) {
-            pc->ArrayPointers[i] = val;
-            return _PicoCLibBind( pc, name, &pc->ArrayPointers[i],
-                                  pc->pc.VoidPtrType );
+        if( pc->ArrayPointers[i].val == val ) {
+            _PicoCLibClearVar( pc, pc->ArrayPointers[i].name );
+            HeapFreeMem( &pc->pc, pc->ArrayPointers[i].name );
+            pc->ArrayPointers[i].name = NULL;
+            pc->ArrayPointers[i].val = NULL;
+            return 0;
         }
     }
 
     fflush( pc->pc.CStdOut );
+    fprintf( pc->pc.CStdOut, "PicoCLibUnbindArray(): array is not binded" );
+    return -1;
+}
+
+int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val ) {
+    size_t i;
+    fflush( pc->pc.CStdOut );
+
+    for( i = 0; i < PICOC_ARRAY_POINTERS_MAX; i++ ) {
+        if( !pc->ArrayPointers[i].val ) {
+            pc->ArrayPointers[i].name = HeapAllocMem( &pc->pc, strlen( name ) + 1 );
+
+            if( !pc->ArrayPointers[i].name ) {
+                fprintf( pc->pc.CStdOut,
+                         "PicoCLibBindArray(): %u array pointers already exists",
+                         PICOC_ARRAY_POINTERS_MAX );
+                return -2;
+            }
+
+            pc->ArrayPointers[i].val = val;
+            strcpy( pc->ArrayPointers[i].name, name );
+            return _PicoCLibBind( pc, name, &pc->ArrayPointers[i].val,
+                                  pc->pc.VoidPtrType );
+        }
+    }
+
     fprintf( pc->pc.CStdOut,
              "PicoCLibBindArray(): %u array pointers already exists",
              PICOC_ARRAY_POINTERS_MAX );

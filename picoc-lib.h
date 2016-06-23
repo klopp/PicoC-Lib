@@ -21,7 +21,7 @@
 # define PATH_MAX           MAX_PATH
 #endif
 
-#define TCC_ERROR_BUF_SIZE  PATH_MAX+PATH_MAX
+#define     TCC_ERROR_BUF_SIZE      PATH_MAX+PATH_MAX
 
 #define     PICOC_STACK_SIZE            1024*1024
 #define     PICOC_OUTBUF_SIZE           PATH_MAX+PATH_MAX
@@ -36,11 +36,13 @@
                                         PICOC_MAX_ARGS) + \
                                         32
 
-
 typedef struct _PicoCLib {
     Picoc pc;
     int InitDebug;
-    void *ArrayPointers[PICOC_ARRAY_POINTERS_MAX];
+    struct {
+        void *val;
+        char *name;
+    } ArrayPointers[PICOC_ARRAY_POINTERS_MAX];
     char PicocOutBuf[PICOC_OUTBUF_SIZE];
 } PicoCLib;
 
@@ -65,6 +67,7 @@ int PicoCLibBindLong( PicoCLib *pc, const char *name, long *val );
 int PicoCLibBindULong( PicoCLib *pc, const char *name, unsigned long *val );
 int PicoCLibBindArray( PicoCLib *pc, const char *name, void *val );
 int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val );
+int PicoCLibUnbindArray( PicoCLib *pc, void *val );
 
 /*
  * format (uppercase for unsigned):
@@ -82,9 +85,11 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
 //PicoFunction PicoCLibGetFunction( PicoC)
 
 /*
- * From ../picoc/picoc.c
+ * From ../picoc/picoc.c etc
  */
 char *PlatformReadFile( Picoc *pc, const char *FileName );
+void *HeapAllocMem( Picoc *pc, int size );
+void HeapFreeMem( Picoc *pc, void *mem );
 
 #endif
 

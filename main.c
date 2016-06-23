@@ -76,6 +76,7 @@ int main() {
     /*
      * Second main() call
      */
+    PicoCLibUnbindArray( &pc, &a );
     rc = PicoCLibMainFromFile( &pc, "./t/main.picoc" );
 
     if( rc ) {
