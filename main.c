@@ -47,7 +47,7 @@ int main() {
     PicoCLibCallFunction( &pc, TypeVoid, "voidfunc", NULL );
 
     if( pc.pc.PicocExitValue ) {
-        printf( "a) exit value: %d, error:\n%s\n", pc.pc.PicocExitValue,
+        printf( "b) exit value: %d, error:\n%s\n", pc.pc.PicocExitValue,
                 pc.PicocOutBuf );
         PicoCLibDown( &pc );
         return pc.pc.PicocExitValue;

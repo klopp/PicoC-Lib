@@ -58,7 +58,7 @@ PicoCLib *PicoCLibInit( PicoCLib *pc ) {
     memset( pc->PicocOutBuf, 0, PICOC_OUTBUF_SIZE );
     memset( pc->ArrayPointers, 0, PICOC_ARRAY_POINTERS_MAX * sizeof( void * ) );
     pc->nArrayPointers = 0;
-    pc->pc.CStdOut = fopen( PICOC_DEV_NULL, "a" );
+    pc->pc.CStdOut = fopen( PICOC_DEV_NULL, "w" );
     setvbuf( pc->pc.CStdOut, pc->PicocOutBuf, _IOFBF, PICOC_OUTBUF_SIZE );
 #ifndef NO_DEBUGGER
     pc->InitDebug = 1;
