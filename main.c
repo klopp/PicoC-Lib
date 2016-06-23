@@ -30,7 +30,7 @@ int main() {
     }
 
     av = PicoCLibCallFunction( &pc, TypeInt, "xx", "izp", 1, "zzz", &a );
-    printf( "error: %s\n", pc.PicocOutBuf );
+    printf( "%d : %s\n", pc.pc.PicocExitValue, pc.PicocOutBuf );
     PicoCLibDown( &pc );
     return pc.pc.PicocExitValue;
     /*

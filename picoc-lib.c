@@ -7,10 +7,10 @@
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
-#define MAIN_EXIT_CODE      "__main__return__"
+#define MAIN_EXIT_CODE      "__main_ret"
 #define INT_MAIN_VOID       MAIN_EXIT_CODE " = main();"
-#define FUNCTION_RET        "__function_return__"
-#define FUNCTION_ARG        "__function_arg__%u__"
+#define FUNCTION_RET        "__f_ret"
+#define FUNCTION_ARG        "__f_arg_%u"
 
 /* -----------------------------------------------------------------------------
  *
@@ -336,16 +336,16 @@ static void _PicoCLibClearFunctionVars( PicoCLib *pc ) {
  -----------------------------------------------------------------------------*/
 union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                                              const char *name, const char *fmt, ... ) {
-    void *funcptr;
-    va_list ap;
+    struct Value *funcptr;
     char call[PICOC_CALLSTR_SIZE];
     union AnyValue rc = { 0 };
     struct ValueType *retptr;
-    const char *s = _PicoCLibGetTypeStr( &pc->pc, ret, &retptr );
     int idx = 1;
     char arg[sizeof( FUNCTION_ARG ) + 8];
     union AnyValue args[PICOC_MAX_ARGS];
     pc->pc.PicocExitValue = 0;
+    va_list ap;
+    const char *s = _PicoCLibGetTypeStr( &pc->pc, ret, &retptr );
     fflush( pc->pc.CStdOut );
 
     if( !s ) {
@@ -373,7 +373,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     fflush( pc->pc.CStdOut );
     va_start( ap, fmt );
 
-    while( *fmt ) {
+    while( fmt && *fmt ) {
         sprintf( arg, FUNCTION_ARG, idx );
         strcat( call, arg );
         strcat( call, "," );
