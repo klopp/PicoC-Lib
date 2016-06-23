@@ -26,8 +26,15 @@
 #define     PICOC_STACK_SIZE            1024*1024
 #define     PICOC_OUTBUF_SIZE           PATH_MAX+PATH_MAX
 #define     PICOC_ARRAY_POINTERS_MAX    64
-#define     PICOC_CALLSTR_SIZE          256
 #define     PICOC_MAX_ARGS              16
+#define     PICOC_FUNCNAME_MAX          256
+#define     PICOC_FUNCTION_RET          "__f_ret"
+#define     PICOC_FUNCTION_ARG          "__f_arg_%u"
+#define     PICOC_CALLSTR_SIZE          sizeof(PICOC_FUNCTION_RET) + \
+                                        ((sizeof(PICOC_FUNCTION_ARG)+8) * \
+                                        PICOC_MAX_ARGS) + \
+                                        PICOC_FUNCNAME_MAX + 32
+
 
 typedef struct _PicoCLib {
     Picoc pc;

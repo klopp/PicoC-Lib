@@ -9,8 +9,6 @@
  -----------------------------------------------------------------------------*/
 #define MAIN_EXIT_CODE      "__main_ret"
 #define INT_MAIN_VOID       MAIN_EXIT_CODE " = main();"
-#define FUNCTION_RET        "__f_ret"
-#define FUNCTION_ARG        "__f_arg_%u"
 
 /* -----------------------------------------------------------------------------
  *
@@ -323,12 +321,12 @@ static void _PicoCLibClearFunctionVars( PicoCLib *pc ) {
     int i;
 
     for( i = 1; i < PICOC_MAX_ARGS; i++ ) {
-        char arg[sizeof( FUNCTION_ARG ) + 8];
-        sprintf( arg, FUNCTION_ARG, i );
+        char arg[sizeof( PICOC_FUNCTION_ARG ) + 8];
+        sprintf( arg, PICOC_FUNCTION_ARG, i );
         _PicoCLibClearVar( pc, arg );
     }
 
-    _PicoCLibClearVar( pc, FUNCTION_RET );
+    _PicoCLibClearVar( pc, PICOC_FUNCTION_RET );
 }
 
 /* -----------------------------------------------------------------------------
@@ -341,12 +339,18 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     union AnyValue rc = { 0 };
     struct ValueType *retptr;
     int idx = 0;
-    char arg[sizeof( FUNCTION_ARG ) + 8];
+    char arg[sizeof( PICOC_FUNCTION_ARG ) + 8];
     union AnyValue args[PICOC_MAX_ARGS];
     pc->pc.PicocExitValue = 0;
     va_list ap;
     const char *s = _PicoCLibGetTypeStr( &pc->pc, ret, &retptr );
     fflush( pc->pc.CStdOut );
+
+    if( strlen( name ) > PICOC_FUNCNAME_MAX ) {
+        fprintf( pc->pc.CStdOut, "function name is too long!" );
+        pc->pc.PicocExitValue = -4;
+        return rc;
+    }
 
     if( !s ) {
         fprintf( pc->pc.CStdOut, "invalid return type: \"%d\"!", ret );
@@ -365,7 +369,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     *call = 0;
 
     if( retptr ) {
-        strcpy( call, FUNCTION_RET " = " );
+        strcpy( call, PICOC_FUNCTION_RET " = " );
     }
 
     strcat( call, name );
@@ -374,7 +378,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     va_start( ap, fmt );
 
     while( fmt && *fmt ) {
-        sprintf( arg, FUNCTION_ARG, ++idx );
+        sprintf( arg, PICOC_FUNCTION_ARG, ++idx );
 
         if( idx >= PICOC_MAX_ARGS ) {
             va_end( ap );
@@ -477,7 +481,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     va_end( ap );
 
     if( retptr ) {
-        VariableDefinePlatformVar( &pc->pc, NULL, FUNCTION_RET, retptr, &rc,
+        VariableDefinePlatformVar( &pc->pc, NULL, PICOC_FUNCTION_RET, retptr, &rc,
                                    TRUE );
     }
 
