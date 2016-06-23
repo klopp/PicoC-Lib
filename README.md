@@ -43,8 +43,17 @@
     }
     printf( "After: a = %d, b = %s, c = {%d, %d}\n", a, b, c.a, c.b );
 
+    /*
+     * Clean include names:
+     */
     PicoCLibClearFileVars( &pc, mainh );
+    /*
+     * Clean possible global names from main1.picoc file:
+     */
     PicoCLibClearFileVars( &pc, main1 );
+    /*
+     * Clean global names from main():
+     */
     PicoCLibClearMainVars( &pc );
     
     printf( "Before: a = %d, b = %s, c = {%d, %d}\n", a, b, c.a, c.b );  
