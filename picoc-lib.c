@@ -8,7 +8,7 @@
  *
  -----------------------------------------------------------------------------*/
 #define MAIN_EXIT_CODE      "__main_ret"
-#define INT_MAIN_VOID       MAIN_EXIT_CODE " = main();"
+#define INT_MAIN_VOID       MAIN_EXIT_CODE "=main();"
 
 /* -----------------------------------------------------------------------------
  *
@@ -355,7 +355,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     s = _PicoCLibGetTypeStr( &pc->pc, ret, &retptr );
 
     if( !s ) {
-        fprintf( pc->pc.CStdOut, "invalid return type: \"%d\"!", ret );
+        fprintf( pc->pc.CStdOut, "invalid return type: %d!", ret );
         pc->pc.PicocExitValue = -1;
         return rc;
     }
@@ -371,7 +371,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     *call = 0;
 
     if( retptr ) {
-        strcpy( call, PICOC_FUNCTION_RET " = " );
+        strcpy( call, PICOC_FUNCTION_RET "=" );
     }
 
     strcat( call, name );
@@ -483,7 +483,8 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     va_end( ap );
 
     if( retptr ) {
-        VariableDefinePlatformVar( &pc->pc, NULL, PICOC_FUNCTION_RET, retptr, &rc,
+        VariableDefinePlatformVar( &pc->pc, NULL, PICOC_FUNCTION_RET, retptr,
+                                   &rc,
                                    TRUE );
     }
 

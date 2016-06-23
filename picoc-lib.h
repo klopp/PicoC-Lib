@@ -31,9 +31,10 @@
 #define     PICOC_FUNCTION_RET          "__f_ret"
 #define     PICOC_FUNCTION_ARG          "__f_arg_%u"
 #define     PICOC_CALLSTR_SIZE          sizeof(PICOC_FUNCTION_RET) + \
+                                        PICOC_FUNCNAME_MAX + \
                                         ((sizeof(PICOC_FUNCTION_ARG)+8) * \
                                         PICOC_MAX_ARGS) + \
-                                        PICOC_FUNCNAME_MAX + 32
+                                        32
 
 
 typedef struct _PicoCLib {
