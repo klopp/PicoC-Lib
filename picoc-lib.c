@@ -239,7 +239,7 @@ int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val ) {
 /* -----------------------------------------------------------------------------
  *
  -----------------------------------------------------------------------------*/
-static void *_PicoCLibGetFunction( PicoCLib *pc, const char *name ) {
+struct Value *_PicoCLibGetFunction( PicoCLib *pc, const char *name ) {
     struct Value *LVal;
 
     if( PicocPlatformSetExitPoint( &pc->pc ) ) {
@@ -260,7 +260,7 @@ static void *_PicoCLibGetFunction( PicoCLib *pc, const char *name ) {
         return NULL;
     }
 
-    return LVal->Val->Pointer;
+    return LVal;
 }
 
 /* -----------------------------------------------------------------------------
@@ -336,7 +336,7 @@ static void _PicoCLibClearFunctionVars( PicoCLib *pc ) {
  -----------------------------------------------------------------------------*/
 union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                                              const char *name, const char *fmt, ... ) {
-    void *ptr;
+    void *funcptr;
     va_list ap;
     char call[PICOC_CALLSTR_SIZE];
     union AnyValue rc = { 0 };
@@ -354,9 +354,9 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
         return rc;
     }
 
-    ptr = _PicoCLibGetFunction( pc, name );
+    funcptr = _PicoCLibGetFunction( pc, name );
 
-    if( !ptr ) {
+    if( !funcptr ) {
         pc->pc.PicocExitValue = -2;
         return rc;
     }
