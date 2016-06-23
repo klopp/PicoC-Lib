@@ -41,7 +41,6 @@ typedef struct _PicoCLib {
     Picoc pc;
     int InitDebug;
     void *ArrayPointers[PICOC_ARRAY_POINTERS_MAX];
-    size_t nArrayPointers;
     char PicocOutBuf[PICOC_OUTBUF_SIZE];
 } PicoCLib;
 
@@ -78,6 +77,9 @@ int PicoCLibBindCharArray( PicoCLib *pc, const char *name, char *val );
  */
 union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
                                              const char *name, const char *fmt, ... );
+
+//typedef union AnyValue (*PicoFunction)(...);
+//PicoFunction PicoCLibGetFunction( PicoC)
 
 /*
  * From ../picoc/picoc.c
