@@ -341,16 +341,18 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     int idx = 0;
     char arg[sizeof( PICOC_FUNCTION_ARG ) + 8];
     union AnyValue args[PICOC_MAX_ARGS];
-    pc->pc.PicocExitValue = 0;
     va_list ap;
-    const char *s = _PicoCLibGetTypeStr( &pc->pc, ret, &retptr );
+    const char *s;
     fflush( pc->pc.CStdOut );
+    pc->pc.PicocExitValue = 0;
 
     if( strlen( name ) > PICOC_FUNCNAME_MAX ) {
         fprintf( pc->pc.CStdOut, "function name is too long!" );
         pc->pc.PicocExitValue = -4;
         return rc;
     }
+
+    s = _PicoCLibGetTypeStr( &pc->pc, ret, &retptr );
 
     if( !s ) {
         fprintf( pc->pc.CStdOut, "invalid return type: \"%d\"!", ret );
@@ -378,17 +380,7 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
     va_start( ap, fmt );
 
     while( fmt && *fmt ) {
-        sprintf( arg, PICOC_FUNCTION_ARG, ++idx );
-
-        if( idx >= PICOC_MAX_ARGS ) {
-            va_end( ap );
-            fprintf( pc->pc.CStdOut, "too many arguments, %u max!",
-                     PICOC_MAX_ARGS );
-            _PicoCLibClearFunctionVars( pc );
-            pc->pc.PicocExitValue = -3;
-            return rc;
-        }
-
+        sprintf( arg, PICOC_FUNCTION_ARG, idx );
         strcat( call, arg );
         strcat( call, "," );
 
@@ -476,6 +468,16 @@ union AnyValue PicoCLibCallFunction( PicoCLib *pc, enum BaseType ret,
         }
 
         fmt++;
+        idx++;
+
+        if( idx > PICOC_MAX_ARGS ) {
+            va_end( ap );
+            fprintf( pc->pc.CStdOut, "too many arguments (%u max)!",
+                     PICOC_MAX_ARGS );
+            _PicoCLibClearFunctionVars( pc );
+            pc->pc.PicocExitValue = -3;
+            return rc;
+        }
     }
 
     va_end( ap );
